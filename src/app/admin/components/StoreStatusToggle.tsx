@@ -89,10 +89,10 @@ export default function StoreStatusToggle() {
   }
 
   return (
-    <div className="flex items-center gap-3 px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl">
-      <div className="flex items-center gap-2">
-        <Store className={`w-4 h-4 ${status.isOpen ? "text-emerald-400" : "text-gray-400"}`} />
-        <span className="text-sm font-medium text-slate-300">
+    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl w-full sm:w-auto">
+      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial">
+        <Store className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${status.isOpen ? "text-emerald-400" : "text-gray-400"}`} />
+        <span className="text-xs sm:text-sm font-medium text-slate-300">
           {status.isOpen ? "Open" : "Closed"}
         </span>
       </div>
@@ -100,7 +100,7 @@ export default function StoreStatusToggle() {
       <button
         onClick={handleToggle}
         disabled={isToggling}
-        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed ${
+        className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 ${
           status.isOpen ? "bg-emerald-500" : "bg-gray-600"
         }`}
         title={
@@ -111,12 +111,12 @@ export default function StoreStatusToggle() {
       >
         {isToggling ? (
           <span className="absolute inset-0 flex items-center justify-center">
-            <div className="h-3 w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
           </span>
         ) : (
           <span
-            className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-              status.isOpen ? "translate-x-6" : "translate-x-1"
+            className={`inline-block h-3.5 w-3.5 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+              status.isOpen ? "translate-x-4 sm:translate-x-6" : "translate-x-0.5 sm:translate-x-1"
             }`}
           />
         )}

@@ -160,26 +160,27 @@ export default function NewItemPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
-        <div className="mb-8">
+        <div className="mb-6 sm:mb-8">
           <Link
             href="/admin"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-4 transition-colors"
+            className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-3 sm:mb-4 transition-colors text-sm sm:text-base"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to Admin Dashboard</span>
+            <span className="hidden sm:inline">Back to Admin Dashboard</span>
+            <span className="sm:hidden">Back</span>
           </Link>
-          <h1 className="text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
             Add New Item
           </h1>
-          <p className="text-slate-400 text-sm mt-2">
+          <p className="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2">
             Fill in the details below to add a new item to your inventory
           </p>
         </div>
 
         {/* Form */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-8 rounded-2xl border border-slate-700/50 shadow-2xl">
+        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-4 sm:p-6 lg:p-8 rounded-xl sm:rounded-2xl border border-slate-700/50 shadow-2xl">
           {error && (
             <div className="mb-6 p-4 bg-red-500/10 border border-red-500/30 rounded-xl text-red-400 text-sm">
               {error}
@@ -192,7 +193,7 @@ export default function NewItemPage() {
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
             {/* Product Selection - At the top */}
             <div>
               <label className="block text-sm font-medium text-slate-300 mb-2">
@@ -309,7 +310,7 @@ export default function NewItemPage() {
 
 
             {/* Toggle */}
-            <div className="flex items-center justify-between p-4 bg-slate-900/30 rounded-xl border border-slate-700/50">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 p-4 bg-slate-900/30 rounded-xl border border-slate-700/50">
               <div>
                 <label className="text-sm font-medium text-slate-300">
                   Available
@@ -336,20 +337,20 @@ export default function NewItemPage() {
             </div>
 
             {/* Submit Buttons */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/30"
+                className="flex-1 flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/30 text-sm sm:text-base"
               >
-                <Save className="w-5 h-5" />
+                <Save className="w-4 h-4 sm:w-5 sm:h-5" />
                 {loading ? "Saving..." : "Save Item"}
               </button>
               <Link
                 href="/admin"
-                className="flex items-center justify-center gap-2 px-6 py-3 bg-slate-800/50 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 rounded-xl transition-all duration-300"
+                className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-slate-800/50 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 rounded-xl transition-all duration-300 text-sm sm:text-base"
               >
-                <X className="w-5 h-5" />
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
                 Cancel
               </Link>
             </div>

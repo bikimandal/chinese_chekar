@@ -1,3 +1,6 @@
+"use client";
+
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import {
   ChefHat,
@@ -9,6 +12,88 @@ import {
   Instagram,
   Twitter,
 } from "lucide-react";
+
+interface StoreStatus {
+  id: string;
+  isOpen: boolean;
+  message?: string;
+  updatedAt: string;
+}
+
+function StoreStatusIndicator() {
+  const [status, setStatus] = useState<StoreStatus | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const fetchStatus = async () => {
+    try {
+      const response = await fetch("/api/store-status");
+      if (response.ok) {
+        const data = await response.json();
+        setStatus(data);
+      } else {
+        // Default to open if API fails
+        setStatus({
+          id: "default",
+          isOpen: true,
+          message: "We are currently closed. Please check back later!",
+          updatedAt: new Date().toISOString(),
+        });
+      }
+    } catch (error) {
+      // Default to open if fetch fails
+      setStatus({
+        id: "default",
+        isOpen: true,
+        message: "We are currently closed. Please check back later!",
+        updatedAt: new Date().toISOString(),
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (loading || !status) {
+    return (
+      <div className="mt-6 p-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg">
+        <div className="flex items-center gap-2 mb-2">
+          <div className="w-2 h-2 bg-slate-500 rounded-full animate-pulse"></div>
+          <span className="text-sm font-semibold text-slate-400">
+            Loading...
+          </span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="mt-6 p-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg">
+      <div className="flex items-center gap-2 mb-2">
+        <div
+          className={`w-2 h-2 rounded-full animate-pulse ${
+            status.isOpen ? "bg-emerald-400" : "bg-gray-400"
+          }`}
+        ></div>
+        <span
+          className={`text-sm font-semibold ${
+            status.isOpen ? "text-emerald-400" : "text-gray-400"
+          }`}
+        >
+          {status.isOpen ? "Now Open" : "Currently Closed"}
+        </span>
+      </div>
+      <p className="text-xs text-slate-400">
+        {status.isOpen
+          ? "Accepting orders for dine-in and takeaway"
+          : status.message ||
+            "We are currently closed. Please check back later!"}
+      </p>
+    </div>
+  );
+}
 
 export default function Footer() {
   return (
@@ -182,17 +267,7 @@ export default function Footer() {
                   </p>
                 </div>
               </div>
-              <div className="mt-6 p-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 rounded-lg">
-                <div className="flex items-center gap-2 mb-2">
-                  <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
-                  <span className="text-sm font-semibold text-emerald-400">
-                    Now Open
-                  </span>
-                </div>
-                <p className="text-xs text-slate-400">
-                  Accepting orders for dine-in and takeaway
-                </p>
-              </div>
+              <StoreStatusIndicator />
             </div>
           </div>
         </div>
