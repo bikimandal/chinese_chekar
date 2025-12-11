@@ -1,0 +1,66 @@
+generator client {
+  provider   = "prisma-client-js"
+  engineType = "library"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  isActive    Boolean  @default(true)
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Product {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  description String?
+  image       String?
+  items       Item[]
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Item {
+  id          String    @id @default(uuid())
+  name        String
+  description String?
+  price       Float
+  stock       Int       @default(0)
+  image       String?
+  categoryId  String?
+  category    Category? @relation(fields: [categoryId], references: [id])
+  productId   String?
+  product     Product?  @relation(fields: [productId], references: [id])
+  isAvailable Boolean   @default(true)
+  isVisible   Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([categoryId])
+  @@index([productId])
+  @@index([isVisible])
+}
+
+model StoreStatus {
+  id        String   @id @default(uuid())
+  isOpen    Boolean  @default(true)
+  message   String?  @default("We are currently closed. Please check back later!")
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+}
