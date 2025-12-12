@@ -100,7 +100,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
       scale: 1,
       transition: {
         duration: 0.4,
-        ease: "easeOut",
+        ease: [0.4, 0, 0.2, 1], // cubic-bezier equivalent to easeOut
       },
     },
     exit: {
