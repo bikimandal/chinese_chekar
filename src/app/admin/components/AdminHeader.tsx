@@ -1,12 +1,16 @@
 import Link from "next/link";
-import { Package, LogOut, ShoppingCart, Receipt } from "lucide-react";
+import { Package, LogOut, ShoppingCart, Receipt, Loader2 } from "lucide-react";
 import StoreStatusToggle from "./StoreStatusToggle";
 
 interface AdminHeaderProps {
   onLogout: () => void;
+  isLoggingOut?: boolean;
 }
 
-export default function AdminHeader({ onLogout }: AdminHeaderProps) {
+export default function AdminHeader({
+  onLogout,
+  isLoggingOut = false,
+}: AdminHeaderProps) {
   return (
     <div className="bg-slate-900/50 backdrop-blur-xl border-b border-slate-800/50 sticky top-0 z-40">
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
@@ -49,11 +53,22 @@ export default function AdminHeader({ onLogout }: AdminHeaderProps) {
             </Link>
             <button
               onClick={onLogout}
-              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 rounded-xl transition-all duration-300 text-sm sm:text-base flex-1 sm:flex-initial"
+              disabled={isLoggingOut}
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 rounded-xl transition-all duration-300 text-sm sm:text-base flex-1 sm:flex-initial disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <LogOut className="w-4 h-4" />
-              <span className="hidden sm:inline">Logout</span>
-              <span className="sm:hidden">Exit</span>
+              {isLoggingOut ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span className="hidden sm:inline">Logging out...</span>
+                  <span className="sm:hidden">Exiting...</span>
+                </>
+              ) : (
+                <>
+                  <LogOut className="w-4 h-4" />
+                  <span className="hidden sm:inline">Logout</span>
+                  <span className="sm:hidden">Exit</span>
+                </>
+              )}
             </button>
           </div>
         </div>

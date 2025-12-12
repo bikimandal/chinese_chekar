@@ -184,7 +184,7 @@ export default function Footer() {
           </div>
 
           {/* Contact Info */}
-          <div>
+          <div id="contact">
             <h3
               className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white flex items-center gap-2 font-sans"
               style={{ fontFamily: 'var(--font-body), sans-serif' }}

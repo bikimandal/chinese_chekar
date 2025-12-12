@@ -66,8 +66,8 @@ export const footerConfig: FooterConfig = {
   ],
   contact: {
     address: "Opposite Parakh Petrol Pump, Bidhannagar, West Bengal",
-    phone: "+91 1111111123",
-    email: "info@chinesechekar.com",
+    phone: "+91 7319050230",
+    email: "sapan009sinha@gmail.com",
   },
   workingHours: [
     {
@@ -82,8 +82,7 @@ export const footerConfig: FooterConfig = {
   quickLinks: [
     { label: "Home", href: "/" },
     { label: "Live Inventory", href: "/inventory" },
-    { label: "About Us", href: "/about" },
-    { label: "Contact", href: "/contact" },
+    { label: "About Us", href: "/about" }
   ],
   footerText: `© ${new Date().getFullYear()} Chinese Chekar. All rights reserved. Crafted with passion.`,
   madeWith: {
