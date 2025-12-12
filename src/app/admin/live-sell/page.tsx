@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, Plus, Minus, ShoppingCart, Trash2 } from "lucide-react";
+import { Package, Plus, Minus, ShoppingCart, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/components/Loader";
 import BackButton from "../components/BackButton";
@@ -25,6 +25,7 @@ export default function LiveSellPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+  const [showCartDetails, setShowCartDetails] = useState(false);
   // Track plate type selection for each item (itemId -> "half" | "full")
   const [plateSelections, setPlateSelections] = useState<Record<string, "half" | "full">>({});
 
@@ -303,7 +304,7 @@ export default function LiveSellPage() {
                       : "border-slate-700/50 hover:border-emerald-500/50"
                   }`}
                 >
-                  <div className="flex items-center gap-3">
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
                     {/* Small Image */}
                     {item.image && (
                       <div className="flex-shrink-0">
@@ -335,9 +336,9 @@ export default function LiveSellPage() {
                           <span className="text-xs text-red-400">(Out of Stock)</span>
                         )}
                       </div>
-                      {/* Show cart items breakdown if multiple plate types in cart */}
+                      {/* Show cart items breakdown if multiple plate types in cart - Hidden on mobile */}
                       {hasHalfFull && allCartItemsForProduct.length > 0 && (
-                        <div className="mb-2 space-y-0.5">
+                        <div className="mb-2 space-y-0.5 hidden sm:block">
                           {allCartItemsForProduct.map((cartItem, idx) => (
                             <div key={idx} className="text-[10px] text-slate-400 flex items-center gap-2">
                               <span className="px-1.5 py-0.5 bg-slate-700/30 rounded">
@@ -347,9 +348,9 @@ export default function LiveSellPage() {
                           ))}
                         </div>
                       )}
-                      <div className="flex items-center gap-3 mb-2">
+                      <div className="flex items-center gap-4 sm:gap-3 mb-2 sm:mb-2">
                         <div>
-                          <p className={`text-xs ${isOutOfStock ? "text-slate-600" : "text-slate-500"}`}>
+                          <p className={`text-[10px] sm:text-xs ${isOutOfStock ? "text-slate-600" : "text-slate-500"}`}>
                             Price
                           </p>
                           <p className={`text-sm sm:text-base font-bold ${
@@ -359,7 +360,7 @@ export default function LiveSellPage() {
                           </p>
                         </div>
                         <div>
-                          <p className={`text-xs ${isOutOfStock ? "text-slate-600" : "text-slate-500"}`}>
+                          <p className={`text-[10px] sm:text-xs ${isOutOfStock ? "text-slate-600" : "text-slate-500"}`}>
                             Stock
                           </p>
                           <p
@@ -379,75 +380,76 @@ export default function LiveSellPage() {
                       </div>
                       {/* Half/Full Plate Toggle */}
                       {hasHalfFull && !isOutOfStock && (
-                        <div className="mb-2">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <button
-                              onClick={() => togglePlateType(item.id, currentPlateType || "half")}
-                              className="flex items-center gap-2 px-3 py-1.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg transition-all text-xs sm:text-sm cursor-pointer"
-                            >
-                              <span className={`px-2 py-0.5 rounded ${currentPlateType === "half" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
-                                Half
-                              </span>
-                              <span className="text-slate-500">/</span>
-                              <span className={`px-2 py-0.5 rounded ${currentPlateType === "full" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
-                                Full
-                              </span>
-                            </button>
-                            {allCartItemsForProduct.length > 0 && (
-                              <span className="text-[10px] text-slate-500 italic">
-                                Toggle to add different plate type
-                              </span>
-                            )}
-                          </div>
+                        <div className="mb-2 sm:mb-2">
+                          <button
+                            onClick={() => togglePlateType(item.id, currentPlateType || "half")}
+                            className="flex items-center gap-2 px-3 py-1.5 sm:py-1.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg transition-all text-xs sm:text-sm cursor-pointer w-full sm:w-auto justify-center sm:justify-start"
+                          >
+                            <span className={`px-2.5 py-1 rounded text-xs ${currentPlateType === "half" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
+                              Half
+                            </span>
+                            <span className="text-slate-500">/</span>
+                            <span className={`px-2.5 py-1 rounded text-xs ${currentPlateType === "full" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
+                              Full
+                            </span>
+                          </button>
+                          {allCartItemsForProduct.length > 0 && (
+                            <span className="text-[9px] sm:text-[10px] text-slate-500 italic hidden sm:inline-block mt-1">
+                              Toggle to add different plate type
+                            </span>
+                          )}
                         </div>
                       )}
                     </div>
 
                     {/* Quantity Controls */}
                     {quantity > 0 ? (
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <button
-                          onClick={() => updateQuantity(item.id, -1, currentPlateType)}
-                          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-white transition-all active:scale-95"
-                        >
-                          <Minus className="w-4 h-4" />
-                        </button>
-                        <div className="flex flex-col items-center">
-                          <span className="w-8 sm:w-10 text-center text-sm sm:text-base font-bold text-white">
-                            {quantity}
-                          </span>
-                          {hasHalfFull && (
-                            <span className="text-[9px] text-slate-500">
-                              {currentPlateType === "half" ? "Half" : "Full"}
+                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0 w-full sm:w-auto">
+                        <div className="flex items-center justify-between sm:justify-center gap-2 bg-slate-700/30 rounded-lg p-1.5 sm:p-0 sm:bg-transparent">
+                          <button
+                            onClick={() => updateQuantity(item.id, -1, currentPlateType)}
+                            className="w-9 h-9 sm:w-9 sm:h-9 flex items-center justify-center bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-white transition-all active:scale-95"
+                          >
+                            <Minus className="w-4 h-4" />
+                          </button>
+                          <div className="flex flex-col items-center min-w-[50px]">
+                            <span className="text-base sm:text-base font-bold text-white">
+                              {quantity}
                             </span>
-                          )}
+                            {hasHalfFull && (
+                              <span className="text-[9px] text-slate-400">
+                                {currentPlateType === "half" ? "Half" : "Full"}
+                              </span>
+                            )}
+                          </div>
+                          <button
+                            onClick={() => updateQuantity(item.id, 1, currentPlateType)}
+                            disabled={totalInCart >= item.stock}
+                            className="w-9 h-9 sm:w-9 sm:h-9 flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded-lg text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+                          >
+                            <Plus className="w-4 h-4" />
+                          </button>
                         </div>
                         <button
-                          onClick={() => updateQuantity(item.id, 1, currentPlateType)}
-                          disabled={totalInCart >= item.stock}
-                          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded-lg text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                          <Plus className="w-4 h-4" />
-                        </button>
-                        <button
                           onClick={() => removeFromCart(item.id, currentPlateType)}
-                          className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 transition-all active:scale-95"
+                          className="w-full sm:w-9 sm:h-9 flex items-center justify-center gap-2 sm:gap-0 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 transition-all active:scale-95 py-2 sm:py-0"
                         >
-                          <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                          <Trash2 className="w-4 h-4" />
+                          <span className="text-xs sm:hidden">Remove</span>
                         </button>
                       </div>
                     ) : (
                       <button
                         onClick={() => !isOutOfStock && addToCart(item)}
                         disabled={isOutOfStock}
-                        className={`flex-shrink-0 px-3 sm:px-4 py-2 sm:py-2.5 font-semibold rounded-lg transition-all duration-300 active:scale-95 text-xs sm:text-sm ${
+                        className={`w-full sm:w-auto flex-shrink-0 px-4 sm:px-4 py-2.5 sm:py-2.5 font-semibold rounded-lg transition-all duration-300 active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-1.5 ${
                           isOutOfStock
                             ? "bg-slate-700/50 text-slate-500 border border-slate-600/30 cursor-not-allowed"
                             : "bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-500 hover:to-green-500 shadow-lg shadow-emerald-500/30 cursor-pointer"
                         }`}
                       >
-                        <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 inline mr-1" />
-                        {isOutOfStock ? "Out of Stock" : "Add"}
+                        <Plus className="w-4 h-4" />
+                        <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
                       </button>
                     )}
                   </div>
@@ -460,26 +462,76 @@ export default function LiveSellPage() {
 
       {/* Fixed Cart Summary at Bottom */}
       {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-br from-slate-900 to-slate-800 border-t border-slate-700/50 p-3 sm:p-4 shadow-2xl z-50">
-          <div className="container mx-auto px-3 sm:px-4">
-            <div className="flex items-center justify-between gap-3 sm:gap-4">
-              <div className="flex-1">
-                <div className="flex items-center gap-2 mb-1">
-                  <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
-                  <span className="text-xs sm:text-sm text-slate-400">
-                    {cart.length} {cart.length === 1 ? "item" : "items"}
-                  </span>
-                </div>
-                <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">
-                  ₹{totalAmount.toFixed(2)}
-                </p>
+        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-br from-slate-900 to-slate-800 border-t border-slate-700/50 shadow-2xl z-50">
+          {/* Arrow Indicator */}
+          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
+            <ChevronUp className="w-6 h-6 text-emerald-400 animate-bounce" />
+          </div>
+
+          {/* Cart Details Toggle */}
+          {showCartDetails && (
+            <div className="max-h-48 overflow-y-auto border-b border-slate-700/50 bg-slate-800/50">
+              <div className="container mx-auto px-3 sm:px-4 py-3 space-y-2">
+                {cart.map((cartItem, index) => (
+                  <div
+                    key={`${cartItem.itemId}-${cartItem.plateType || 'none'}-${index}`}
+                    className="flex items-center justify-between text-xs sm:text-sm bg-slate-700/30 rounded-lg p-2"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-white font-medium truncate">
+                        {cartItem.itemName}
+                        {cartItem.plateType && (
+                          <span className="text-slate-400 ml-1">
+                            ({cartItem.plateType === "half" ? "Half" : "Full"} plate)
+                          </span>
+                        )}
+                      </p>
+                      <p className="text-slate-400">
+                        Qty: {cartItem.quantity} × ₹{cartItem.price} = ₹{(cartItem.quantity * cartItem.price).toFixed(2)}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => removeFromCart(cartItem.itemId, cartItem.plateType)}
+                      className="ml-2 p-1.5 hover:bg-red-500/20 rounded transition-colors"
+                    >
+                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                    </button>
+                  </div>
+                ))}
               </div>
-              <button
-                onClick={proceedToCheckout}
-                className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/30 text-sm sm:text-base whitespace-nowrap"
-              >
-                Proceed to Checkout
-              </button>
+            </div>
+          )}
+
+          {/* Main Cart Summary */}
+          <div className="p-3 sm:p-4">
+            <div className="container mx-auto px-3 sm:px-4">
+              <div className="flex items-center justify-between gap-3 sm:gap-4">
+                <div className="flex-1">
+                  <button
+                    onClick={() => setShowCartDetails(!showCartDetails)}
+                    className="flex items-center gap-2 mb-1 group"
+                  >
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                    <span className="text-xs sm:text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
+                      {cart.length} {cart.length === 1 ? "item" : "items"}
+                    </span>
+                    {showCartDetails ? (
+                      <ChevronDown className="w-4 h-4 text-slate-400" />
+                    ) : (
+                      <ChevronUp className="w-4 h-4 text-slate-400" />
+                    )}
+                  </button>
+                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+                    ₹{totalAmount.toFixed(2)}
+                  </p>
+                </div>
+                <button
+                  onClick={proceedToCheckout}
+                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/30 text-sm sm:text-base whitespace-nowrap"
+                >
+                  Proceed to Checkout
+                </button>
+              </div>
             </div>
           </div>
         </div>

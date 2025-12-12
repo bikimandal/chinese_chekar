@@ -60,27 +60,33 @@ export default function TopProgressBar() {
   useEffect(() => {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      
+
       // Find the closest link that might trigger navigation
-      const link = target.closest('a[href]') as HTMLAnchorElement | null;
-      
+      const link = target.closest("a[href]") as HTMLAnchorElement | null;
+
       if (link) {
-        const href = link.getAttribute('href');
-        
+        const href = link.getAttribute("href");
+
         // Check if it's an internal link (starts with /) and not the same page
-        if (href && href.startsWith('/') && href !== pathname) {
+        if (href && href.startsWith("/") && href !== pathname) {
           // Check if it's not an external link or special protocol
-          if (!href.startsWith('//') && !href.startsWith('http')) {
+          if (!href.startsWith("//") && !href.startsWith("http")) {
             startProgress();
           }
         }
       }
-      
+
       // Also check for buttons that might trigger navigation
-      const button = target.closest('button[data-navigate]') as HTMLButtonElement | null;
+      const button = target.closest(
+        "button[data-navigate]"
+      ) as HTMLButtonElement | null;
       if (button) {
-        const navigateTo = button.getAttribute('data-navigate');
-        if (navigateTo && navigateTo.startsWith('/') && navigateTo !== pathname) {
+        const navigateTo = button.getAttribute("data-navigate");
+        if (
+          navigateTo &&
+          navigateTo.startsWith("/") &&
+          navigateTo !== pathname
+        ) {
           startProgress();
         }
       }
@@ -92,12 +98,12 @@ export default function TopProgressBar() {
     };
 
     // Use capture phase to catch clicks early, before navigation
-    document.addEventListener('click', handleClick, true);
-    window.addEventListener('navigation-start', handleNavigation);
+    document.addEventListener("click", handleClick, true);
+    window.addEventListener("navigation-start", handleNavigation);
 
     return () => {
-      document.removeEventListener('click', handleClick, true);
-      window.removeEventListener('navigation-start', handleNavigation);
+      document.removeEventListener("click", handleClick, true);
+      window.removeEventListener("navigation-start", handleNavigation);
     };
   }, [pathname, startProgress]);
 
@@ -114,7 +120,7 @@ export default function TopProgressBar() {
     // Wait for the page to actually be ready, not just pathname change
     const checkPageReady = () => {
       // Check if document is ready
-      if (document.readyState === 'complete') {
+      if (document.readyState === "complete") {
         // Wait for React to hydrate and render (double RAF ensures next paint)
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -124,7 +130,7 @@ export default function TopProgressBar() {
             }, 150);
           });
         });
-      } else if (document.readyState === 'interactive') {
+      } else if (document.readyState === "interactive") {
         // Page is loading but interactive, wait a bit more
         requestAnimationFrame(() => {
           requestAnimationFrame(() => {
@@ -144,8 +150,8 @@ export default function TopProgressBar() {
             });
           });
         };
-        window.addEventListener('load', handleLoad, { once: true });
-        return () => window.removeEventListener('load', handleLoad);
+        window.addEventListener("load", handleLoad, { once: true });
+        return () => window.removeEventListener("load", handleLoad);
       }
     };
 
@@ -165,10 +171,10 @@ export default function TopProgressBar() {
         className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 transition-all duration-200 ease-out"
         style={{
           width: `${progress}%`,
-          boxShadow: "0 0 8px rgba(245, 158, 11, 0.6), 0 0 4px rgba(245, 158, 11, 0.4)",
+          boxShadow:
+            "0 0 8px rgba(245, 158, 11, 0.6), 0 0 4px rgba(245, 158, 11, 0.4)",
         }}
       />
     </div>
   );
 }
-

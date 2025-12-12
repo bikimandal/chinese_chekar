@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Receipt, Calendar, Download, Filter } from "lucide-react";
+import { Receipt, Calendar, Download, Filter, Search } from "lucide-react";
 import Link from "next/link";
 import BackButton from "../components/BackButton";
 import Loader from "@/components/Loader";
@@ -15,6 +15,7 @@ interface SaleItem {
   quantity: number;
   unitPrice: number;
   totalPrice: number;
+  plateType?: string | null;
 }
 
 interface Sale {
@@ -31,10 +32,15 @@ export default function SalesPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedDate, setSelectedDate] = useState<string>("");
+  const [tempDate, setTempDate] = useState<string>(""); // Temporary date for calendar selection
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
 
   useEffect(() => {
     checkSession();
+    // Set default date to today
+    const today = new Date().toISOString().split("T")[0];
+    setSelectedDate(today);
+    setTempDate(today);
   }, []);
 
   const checkSession = async () => {
@@ -54,7 +60,9 @@ export default function SalesPage() {
 
       if (data.user) {
         setIsAuthenticated(true);
-        fetchSales();
+        // Fetch sales with today's date as default
+        const today = new Date().toISOString().split("T")[0];
+        fetchSales(today);
       } else {
         window.location.href = "/login";
       }
@@ -91,19 +99,35 @@ export default function SalesPage() {
     }
   };
 
-  const handleDateChange = (date: string) => {
-    setSelectedDate(date);
-    fetchSales(date || undefined);
+  // Handle date input change - only update temp state, don't call API
+  const handleDateInputChange = (date: string) => {
+    setTempDate(date);
+  };
+
+  // Handle search button click - commit the date and fetch sales
+  const handleSearch = () => {
+    setSelectedDate(tempDate);
+    fetchSales(tempDate || undefined);
+  };
+
+  // Handle when user presses Enter in date input
+  const handleDateKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      handleSearch();
+    }
   };
 
   const handleTodayClick = () => {
     const today = new Date().toISOString().split("T")[0];
     setSelectedDate(today);
+    setTempDate(today);
     fetchSales(today);
   };
 
   const handleClearFilter = () => {
     setSelectedDate("");
+    setTempDate("");
     fetchSales();
   };
 
@@ -243,41 +267,29 @@ export default function SalesPage() {
       pdf.text("DETAILED SALES TRANSACTIONS", margin, yPos);
       yPos += 6;
 
-      // Table Header
-      pdf.setFontSize(9);
-      pdf.setFont("helvetica", "bold");
-      pdf.text("Invoice #", margin, yPos);
-      pdf.text("Date & Time", margin + 40, yPos);
-      pdf.text("Items", margin + 80, yPos);
-      pdf.text("Amount (Rs.)", pageWidth - margin, yPos, { align: "right" });
-      yPos += 5;
-
-      // Divider
-      pdf.line(margin, yPos, pageWidth - margin, yPos);
-      yPos += 5;
-
-      // Sales Data
-      pdf.setFontSize(8);
-      pdf.setFont("helvetica", "normal");
-      sales.forEach((sale, index) => {
-        // Check if we need a new page
-        if (yPos > 270) {
+      // Sales Data - Detailed view with complete order segregation
+      sales.forEach((sale, saleIndex) => {
+        // Check if we need a new page before starting a new sale
+        if (yPos > 250) {
           pdf.addPage();
           yPos = margin;
-          // Re-add table header on new page
-          pdf.setFontSize(9);
-          pdf.setFont("helvetica", "bold");
-          pdf.text("Invoice #", margin, yPos);
-          pdf.text("Date & Time", margin + 40, yPos);
-          pdf.text("Items", margin + 80, yPos);
-          pdf.text("Amount (Rs.)", pageWidth - margin, yPos, { align: "right" });
-          yPos += 5;
-          pdf.line(margin, yPos, pageWidth - margin, yPos);
-          yPos += 5;
-          pdf.setFontSize(8);
-          pdf.setFont("helvetica", "normal");
         }
 
+        // Sale Header
+        pdf.setFontSize(10);
+        pdf.setFont("helvetica", "bold");
+        pdf.text(`Order #${saleIndex + 1}`, margin, yPos);
+        yPos += 5;
+
+        // Invoice Number
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Invoice Number:", margin, yPos);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(sale.invoiceNumber, margin + 35, yPos);
+        yPos += 5;
+
+        // Date & Time
         const saleDate = new Date(sale.saleDate);
         const dateTimeStr = `${saleDate.toLocaleDateString("en-IN", {
           day: "2-digit",
@@ -288,14 +300,56 @@ export default function SalesPage() {
           minute: "2-digit",
           hour12: true,
         })}`;
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Date & Time:", margin, yPos);
+        pdf.setFont("helvetica", "normal");
+        pdf.text(dateTimeStr, margin + 35, yPos);
+        yPos += 6;
 
-        pdf.text(sale.invoiceNumber, margin, yPos);
-        pdf.text(dateTimeStr, margin + 40, yPos);
-        pdf.text(`${sale.items.length} items`, margin + 80, yPos);
-        pdf.text(`${sale.totalAmount.toFixed(2)}`, pageWidth - margin, yPos, {
+        // Items Header
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Items:", margin, yPos);
+        yPos += 5;
+
+        // Items List with plate type information
+        pdf.setFontSize(8);
+        pdf.setFont("helvetica", "normal");
+        sale.items.forEach((item, itemIndex) => {
+          // Check if we need a new page for items
+          if (yPos > 270) {
+            pdf.addPage();
+            yPos = margin;
+          }
+
+          // Item name (already includes plate type from checkout)
+          // Just use itemName directly as it already contains plate type information
+          const itemLine = `${itemIndex + 1}. ${item.itemName}`;
+          pdf.text(itemLine, margin + 5, yPos);
+          yPos += 4;
+
+          // Quantity, Unit Price, Total
+          const detailsLine = `   Qty: ${item.quantity} × Rs. ${item.unitPrice.toFixed(2)} = Rs. ${item.totalPrice.toFixed(2)}`;
+          pdf.text(detailsLine, margin + 5, yPos);
+          yPos += 5;
+        });
+
+        // Order Total
+        yPos += 2;
+        pdf.setFontSize(9);
+        pdf.setFont("helvetica", "bold");
+        pdf.text("Order Total:", margin + 5, yPos);
+        pdf.text(`Rs. ${sale.totalAmount.toFixed(2)}`, pageWidth - margin, yPos, {
           align: "right",
         });
-        yPos += 5;
+        yPos += 8;
+
+        // Divider between orders
+        if (saleIndex < sales.length - 1) {
+          pdf.setLineWidth(0.3);
+          pdf.line(margin, yPos, pageWidth - margin, yPos);
+          yPos += 5;
+        }
       });
 
       // Footer
@@ -389,12 +443,23 @@ export default function SalesPage() {
                 >
                   Today
                 </button>
-                <input
-                  type="date"
-                  value={selectedDate}
-                  onChange={(e) => handleDateChange(e.target.value)}
-                  className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-700/50 border border-slate-600 text-white rounded-lg text-xs sm:text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
-                />
+                <div className="flex items-center gap-2">
+                  <input
+                    type="date"
+                    value={tempDate}
+                    onChange={(e) => handleDateInputChange(e.target.value)}
+                    onKeyDown={handleDateKeyDown}
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-700/50 border border-slate-600 text-white rounded-lg text-xs sm:text-sm focus:outline-none focus:border-amber-500/50 transition-colors"
+                  />
+                  <button
+                    onClick={handleSearch}
+                    disabled={loading}
+                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-500 hover:to-orange-500 transition-all duration-300 text-xs sm:text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
+                  >
+                    <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Search</span>
+                  </button>
+                </div>
                 {selectedDate && (
                   <button
                     onClick={handleClearFilter}
