@@ -23,7 +23,6 @@ export default function HeroSection() {
       y: 0,
       transition: {
         duration: 0.6,
-        ease: "easeOut",
       },
     },
   };
@@ -36,7 +35,6 @@ export default function HeroSection() {
       scale: 1,
       transition: {
         duration: 0.5,
-        ease: "easeOut",
       },
     },
   };
@@ -259,7 +257,7 @@ export default function HeroSection() {
         <motion.div
           className="w-6 h-10 border-2 border-amber-500/30 rounded-full flex items-start justify-center p-2"
           animate={{ y: [0, 10, 0] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          transition={{ duration: 2, repeat: Infinity }}
         >
           <motion.div
             className="w-1 h-2 bg-amber-400 rounded-full"
