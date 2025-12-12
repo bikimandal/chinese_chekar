@@ -12,6 +12,9 @@ interface Product {
   name: string;
   description?: string;
   image?: string;
+  hasHalfFullPlate?: boolean;
+  halfPlatePrice?: number | null;
+  fullPlatePrice?: number | null;
 }
 
 interface Item {
@@ -41,9 +44,12 @@ export default function EditItemPage() {
     name: "",
     description: "",
     price: "",
+    halfPlatePrice: "",
+    fullPlatePrice: "",
     stock: "",
     productId: "",
     isAvailable: true,
+    hasHalfFullPlate: false,
   });
 
   useEffect(() => {
@@ -99,13 +105,25 @@ export default function EditItemPage() {
       }
 
       const item: Item = await response.json();
+      const product = item.product;
+      const hasHalfFull = product?.hasHalfFullPlate ?? false;
+      
       setFormData({
         name: item.name,
         description: item.description || "",
         price: item.price.toString(),
+        halfPlatePrice: hasHalfFull && product?.halfPlatePrice
+          ? product.halfPlatePrice.toString()
+          : "",
+        fullPlatePrice: hasHalfFull && product?.fullPlatePrice
+          ? product.fullPlatePrice.toString()
+          : product?.fullPlatePrice
+          ? product.fullPlatePrice.toString()
+          : "",
         stock: item.stock.toString(),
         productId: item.productId || item.product?.id || "",
         isAvailable: item.isAvailable,
+        hasHalfFullPlate: hasHalfFull,
       });
     } catch (error) {
       console.error("Error fetching item:", error);
@@ -122,10 +140,25 @@ export default function EditItemPage() {
         (p) => p.id === formData.productId
       );
       if (selectedProduct) {
+        const hasHalfFull = selectedProduct.hasHalfFullPlate ?? false;
         setFormData((prev) => ({
           ...prev,
           name: selectedProduct.name,
           description: selectedProduct.description || "",
+          hasHalfFullPlate: hasHalfFull,
+          // If product has half/full plate, populate both prices
+          halfPlatePrice: hasHalfFull && selectedProduct.halfPlatePrice
+            ? selectedProduct.halfPlatePrice.toString()
+            : "",
+          fullPlatePrice: hasHalfFull && selectedProduct.fullPlatePrice
+            ? selectedProduct.fullPlatePrice.toString()
+            : selectedProduct.fullPlatePrice
+            ? selectedProduct.fullPlatePrice.toString()
+            : "",
+          // If product doesn't have half/full plate, use fullPlatePrice as single price
+          price: !hasHalfFull && selectedProduct.fullPlatePrice
+            ? selectedProduct.fullPlatePrice.toString()
+            : prev.price,
         }));
       }
     }
@@ -149,10 +182,24 @@ export default function EditItemPage() {
       return;
     }
 
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      setError("Please enter a valid price");
-      setLoading(false);
-      return;
+    // Validate prices based on half/full plate option
+    if (formData.hasHalfFullPlate) {
+      if (!formData.halfPlatePrice || parseFloat(formData.halfPlatePrice) <= 0) {
+        setError("Please enter a valid half plate price");
+        setLoading(false);
+        return;
+      }
+      if (!formData.fullPlatePrice || parseFloat(formData.fullPlatePrice) <= 0) {
+        setError("Please enter a valid full plate price");
+        setLoading(false);
+        return;
+      }
+    } else {
+      if (!formData.price || parseFloat(formData.price) <= 0) {
+        setError("Please enter a valid price");
+        setLoading(false);
+        return;
+      }
     }
 
     if (formData.stock === "" || parseInt(formData.stock) < 0) {
@@ -170,7 +217,9 @@ export default function EditItemPage() {
         body: JSON.stringify({
           name: formData.name,
           description: formData.description,
-          price: parseFloat(formData.price),
+          price: formData.hasHalfFullPlate
+            ? parseFloat(formData.halfPlatePrice)
+            : parseFloat(formData.price),
           stock: parseInt(formData.stock),
           productId: formData.productId,
           isAvailable: formData.isAvailable,
@@ -308,27 +357,88 @@ export default function EditItemPage() {
               />
             </div>
 
-            {/* Price and Stock */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Price (₹) <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  step="0.01"
-                  min="0"
-                  value={formData.price}
-                  onChange={(e) =>
-                    setFormData({ ...formData, price: e.target.value })
-                  }
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
-                  placeholder="0.00"
-                />
+            {/* Price Fields - Dynamic based on product selection */}
+            {formData.hasHalfFullPlate ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Half Plate Price (₹) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.halfPlatePrice}
+                    onChange={(e) =>
+                      setFormData({ ...formData, halfPlatePrice: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Full Plate Price (₹) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.fullPlatePrice}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullPlatePrice: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                    placeholder="0.00"
+                  />
+                </div>
               </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Price (₹) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price}
+                    onChange={(e) =>
+                      setFormData({ ...formData, price: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Stock Quantity <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    value={formData.stock}
+                    onChange={(e) =>
+                      setFormData({ ...formData, stock: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                    placeholder="0"
+                  />
+                </div>
+              </div>
+            )}
 
+            {/* Stock Quantity - Show separately when half/full plate is enabled */}
+            {formData.hasHalfFullPlate && (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Stock Quantity <span className="text-red-400">*</span>
@@ -346,7 +456,7 @@ export default function EditItemPage() {
                   placeholder="0"
                 />
               </div>
-            </div>
+            )}
 
             {/* Toggle */}
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0 p-4 bg-slate-900/30 rounded-xl border border-slate-700/50">
