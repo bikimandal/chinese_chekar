@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Package, LogOut, ShoppingCart } from "lucide-react";
+import { Package, LogOut, ShoppingCart, Receipt } from "lucide-react";
 import StoreStatusToggle from "./StoreStatusToggle";
 
 interface AdminHeaderProps {
@@ -30,6 +30,14 @@ export default function AdminHeader({ onLogout }: AdminHeaderProps) {
               <ShoppingCart className="w-4 h-4" />
               <span className="hidden sm:inline">Live Sell</span>
               <span className="sm:hidden">Sell</span>
+            </Link>
+            <Link
+              href="/admin/sales"
+              className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:text-white hover:bg-blue-500/20 rounded-xl transition-all duration-300 text-sm sm:text-base flex-1 sm:flex-initial"
+            >
+              <Receipt className="w-4 h-4" />
+              <span className="hidden sm:inline">Sales</span>
+              <span className="sm:hidden">Sales</span>
             </Link>
             <Link
               href="/admin/controls"

@@ -75,13 +75,29 @@ export default function TopProgressBar() {
           }
         }
       }
+      
+      // Also check for buttons that might trigger navigation
+      const button = target.closest('button[data-navigate]') as HTMLButtonElement | null;
+      if (button) {
+        const navigateTo = button.getAttribute('data-navigate');
+        if (navigateTo && navigateTo.startsWith('/') && navigateTo !== pathname) {
+          startProgress();
+        }
+      }
+    };
+
+    // Listen for custom navigation events (for programmatic navigation)
+    const handleNavigation = () => {
+      startProgress();
     };
 
     // Use capture phase to catch clicks early, before navigation
     document.addEventListener('click', handleClick, true);
+    window.addEventListener('navigation-start', handleNavigation);
 
     return () => {
       document.removeEventListener('click', handleClick, true);
+      window.removeEventListener('navigation-start', handleNavigation);
     };
   }, [pathname, startProgress]);
 

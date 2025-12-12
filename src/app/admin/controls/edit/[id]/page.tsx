@@ -2,9 +2,10 @@
 
 import { useState, useEffect } from "react";
 import { useRouter, useParams } from "next/navigation";
-import { ArrowLeft, Save, X, Upload } from "lucide-react";
+import { Save, X, Upload } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/components/Loader";
+import BackButton from "../../components/BackButton";
 
 interface Product {
   id: string;
@@ -215,20 +216,17 @@ export default function EditProductPage() {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <Link
-            href="/admin/controls"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-3 sm:mb-4 transition-colors text-sm sm:text-base"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to Product Templates</span>
-            <span className="sm:hidden">Back</span>
-          </Link>
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
-            Edit Product
-          </h1>
-          <p className="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2">
-            Update the details below to modify this product template
-          </p>
+          <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+            <div className="flex-1 min-w-0">
+              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
+                Edit Product
+              </h1>
+              <p className="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2">
+                Update the details below to modify this product template
+              </p>
+            </div>
+            <BackButton href="/admin/controls" label="Back" />
+          </div>
         </div>
 
         {/* Form */}

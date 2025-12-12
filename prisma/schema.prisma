@@ -64,3 +64,29 @@ model StoreStatus {
   updatedAt DateTime @updatedAt
   updatedBy String?
 }
+
+model Sale {
+  id            String     @id @default(uuid())
+  invoiceNumber String     @unique @default(uuid())
+  totalAmount   Float
+  saleDate      DateTime   @default(now())
+  items         SaleItem[]
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([saleDate])
+}
+
+model SaleItem {
+  id         String   @id @default(uuid())
+  saleId     String
+  sale       Sale     @relation(fields: [saleId], references: [id], onDelete: Cascade)
+  itemId     String
+  itemName   String
+  quantity   Int
+  unitPrice  Float
+  totalPrice Float
+  createdAt  DateTime @default(now())
+
+  @@index([saleId])
+}

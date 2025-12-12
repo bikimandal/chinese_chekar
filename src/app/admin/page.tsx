@@ -7,6 +7,8 @@ import { Item, Category } from "./types";
 import AdminHeader from "./components/AdminHeader";
 import StatsCards from "./components/StatsCards";
 import ItemsTable from "./components/ItemsTable";
+import StatsCardsSkeleton from "@/components/skeletons/StatsCardsSkeleton";
+import ItemsTableSkeleton from "@/components/skeletons/ItemsTableSkeleton";
 
 export default function AdminPage() {
   const router = useRouter();
@@ -15,6 +17,7 @@ export default function AdminPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
+  const [isLoadingItems, setIsLoadingItems] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -84,6 +87,7 @@ export default function AdminPage() {
   };
 
   const fetchItems = async () => {
+    setIsLoadingItems(true);
     try {
       const response = await fetch("/api/items?admin=true");
 
@@ -105,6 +109,8 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error fetching items:", error);
       setItems([]);
+    } finally {
+      setIsLoadingItems(false);
     }
   };
 
@@ -188,18 +194,27 @@ export default function AdminPage() {
       <AdminHeader onLogout={handleLogout} />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
-        <StatsCards
-          totalItems={totalItems}
-          lowStock={lowStock}
-          outOfStock={outOfStock}
-        />
+        {isLoadingItems ? (
+          <>
+            <StatsCardsSkeleton />
+            <ItemsTableSkeleton />
+          </>
+        ) : (
+          <>
+            <StatsCards
+              totalItems={totalItems}
+              lowStock={lowStock}
+              outOfStock={outOfStock}
+            />
 
-        <ItemsTable
-          items={items}
-          togglingItemId={togglingItemId}
-          onDelete={handleDelete}
-          onToggleAvailability={handleToggleAvailability}
-        />
+            <ItemsTable
+              items={items}
+              togglingItemId={togglingItemId}
+              onDelete={handleDelete}
+              onToggleAvailability={handleToggleAvailability}
+            />
+          </>
+        )}
       </div>
     </div>
   );

@@ -112,16 +112,8 @@ export default function AdminControlsPage() {
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-6xl">
         {/* Header */}
         <div className="mb-6 sm:mb-8">
-          <Link
-            href="/admin"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-3 sm:mb-4 transition-colors text-sm sm:text-base"
-          >
-            <ArrowLeft className="w-4 h-4" />
-            <span className="hidden sm:inline">Back to Admin Dashboard</span>
-            <span className="sm:hidden">Back</span>
-          </Link>
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <div className="flex-1">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
+            <div className="flex-1 min-w-0">
               <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
                 Product Templates
               </h1>
@@ -129,14 +121,17 @@ export default function AdminControlsPage() {
                 Manage product templates for your inventory
               </p>
             </div>
-            <Link
-              href="/admin/controls/new"
-              className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 shadow-lg shadow-amber-500/30 text-sm sm:text-base w-full sm:w-auto"
-            >
-              <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="sm:hidden">Add Product</span>
-              <span className="hidden sm:inline">Add Product</span>
-            </Link>
+            <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
+              <BackButton href="/admin" label="Back" />
+              <Link
+                href="/admin/controls/new"
+                className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 shadow-lg shadow-amber-500/30 text-sm sm:text-base flex-1 sm:flex-initial cursor-pointer"
+              >
+                <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
+                <span className="sm:hidden">Add Product</span>
+                <span className="hidden sm:inline">Add Product</span>
+              </Link>
+            </div>
           </div>
         </div>
 

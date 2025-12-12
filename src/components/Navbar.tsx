@@ -20,7 +20,16 @@ export default function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-8">
               <NavLink href="/">Home</NavLink>
-              <NavLink href="/inventory">Live Inventory</NavLink>
+              <Link
+                href="/inventory"
+                className="text-gray-300 hover:text-gold-accent hover:scale-105 px-3 py-2 rounded-md text-sm font-medium transition-all duration-200 flex items-center gap-2"
+              >
+                <span>Live Inventory</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+              </Link>
               <NavLink href="/about">About Us</NavLink>
               <NavLink href="/contact">Contact</NavLink>
               <Link
@@ -47,7 +56,17 @@ export default function Navbar() {
       <div className={cn("md:hidden bg-dark-surface border-t border-white/10", isOpen ? "block" : "hidden")}>
         <div className="px-2 pt-2 pb-3 space-y-1 sm:px-3">
           <MobileNavLink href="/" onClick={() => setIsOpen(false)}>Home</MobileNavLink>
-          <MobileNavLink href="/inventory" onClick={() => setIsOpen(false)}>Live Inventory</MobileNavLink>
+          <Link
+            href="/inventory"
+            onClick={() => setIsOpen(false)}
+            className="text-gray-300 hover:bg-gray-700 hover:text-white block px-3 py-2 rounded-md text-base font-medium flex items-center gap-2"
+          >
+            <span>Live Inventory</span>
+            <span className="relative flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+            </span>
+          </Link>
           <MobileNavLink href="/about" onClick={() => setIsOpen(false)}>About Us</MobileNavLink>
           <MobileNavLink href="/contact" onClick={() => setIsOpen(false)}>Contact</MobileNavLink>
           <Link

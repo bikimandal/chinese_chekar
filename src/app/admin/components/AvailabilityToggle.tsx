@@ -15,7 +15,7 @@ export default function AvailabilityToggle({
     <button
       onClick={onToggle}
       disabled={isToggling}
-      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed ${
+      className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer ${
         item.isAvailable ? "bg-emerald-500" : "bg-gray-600"
       }`}
       title={

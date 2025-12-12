@@ -117,3 +117,43 @@ h1 {
 *:hover {
   scrollbar-color: rgba(255, 215, 0, 0.9) rgba(18, 18, 18, 0.8);
 }
+
+/* Skeleton Loader Animation */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 2s infinite;
+}
+
+/* Print Styles */
+@media print {
+  @page {
+    size: 80mm auto;
+    margin: 0;
+  }
+
+  body {
+    background: white;
+    color: black;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  /* Hide navigation and other non-printable elements */
+  nav,
+  footer,
+  button:not(.print-button),
+  header,
+  .print-hidden {
+    display: none !important;
+  }
+}
