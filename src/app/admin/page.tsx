@@ -18,6 +18,7 @@ export default function AdminPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -76,12 +77,14 @@ export default function AdminPage() {
   };
 
   const handleLogout = async () => {
+    setIsLoggingOut(true);
     try {
       await fetch("/api/auth/logout", { method: "POST" });
       setIsAuthenticated(false);
       router.push("/login");
     } catch (error) {
       console.error("Logout error:", error);
+      setIsLoggingOut(false);
       router.push("/login");
     }
   };
@@ -210,7 +213,7 @@ export default function AdminPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <AdminHeader onLogout={handleLogout} />
+      <AdminHeader onLogout={handleLogout} isLoggingOut={isLoggingOut} />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         {isLoadingItems ? (

@@ -104,7 +104,7 @@ export default function ItemCard({
               src={image}
               alt={name}
               fill
-              loading="eager"
+              loading="lazy"
               className={`object-cover transition-all duration-700 ${
                 isDisabled
                   ? "opacity-50"
@@ -138,7 +138,7 @@ export default function ItemCard({
         )}
 
         {/* Ribbon Badge on Corner */}
-        <div className="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden z-10">
+        <div className="absolute top-0 left-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden z-10">
           <div
             className={`absolute w-28 sm:w-32 h-5 sm:h-6 flex items-center justify-center shadow-lg ${
               isDisabled
@@ -147,16 +147,22 @@ export default function ItemCard({
                 ? "bg-gradient-to-r from-purple-600 to-indigo-700"
                 : stock <= 5
                 ? "bg-gradient-to-r from-amber-500 to-orange-500"
-                : "bg-gradient-to-r from-emerald-500 to-green-500"
+                : "bg-gradient-to-r from-emerald-700 to-green-700"
             }`}
             style={{
-              transform: "rotate(45deg)",
+              transform: "rotate(-45deg)",
               transformOrigin: "center",
               top: "14px",
-              right: "-32px",
+              left: "-32px",
             }}
           >
-            <span className="text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider whitespace-nowrap drop-shadow-md">
+            <span
+              className="text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider whitespace-nowrap"
+              style={{
+                textShadow:
+                  "0 2px 4px rgba(0,0,0,0.9), 0 0 8px rgba(0,0,0,0.5), 1px 1px 2px rgba(0,0,0,1)",
+              }}
+            >
               {isDisabled
                 ? "Not Available"
                 : isOutOfStock
@@ -189,7 +195,7 @@ export default function ItemCard({
                   ? "text-purple-300"
                   : "text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-amber-200 group-hover:to-orange-200 group-hover:bg-clip-text"
               }`}
-              style={{ fontFamily: 'var(--font-body), sans-serif' }}
+              style={{ fontFamily: "var(--font-body), sans-serif" }}
             >
               {name}
             </h3>
@@ -224,7 +230,9 @@ export default function ItemCard({
                     : "bg-amber-500/10 border border-amber-500/20"
                   : "invisible"
               }`}
-              style={{ minHeight: hasHalfFull && fullPlatePrice ? 'auto' : '28px' }}
+              style={{
+                minHeight: hasHalfFull && fullPlatePrice ? "auto" : "28px",
+              }}
             >
               {hasHalfFull && fullPlatePrice && (
                 <span
@@ -316,7 +324,10 @@ export default function ItemCard({
         </div>
 
         {/* Action Hint - Always reserve space */}
-        <div className="pt-1.5 sm:pt-2 mt-2 hidden sm:block" style={{ minHeight: '40px' }}>
+        <div
+          className="pt-1.5 sm:pt-2 mt-2 hidden sm:block"
+          style={{ minHeight: "40px" }}
+        >
           {isAvailable && stock > 0 && (
             <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
               <div className="text-center py-2 px-4 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-lg">

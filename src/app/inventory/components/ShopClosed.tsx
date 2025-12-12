@@ -9,7 +9,7 @@ export default function ShopClosed({ message }: ShopClosedProps) {
   const isNight = currentHour >= 18 || currentHour < 6;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
+    <div className="min-h-screen bg-linear-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500 rounded-full blur-3xl animate-pulse"></div>
@@ -54,9 +54,9 @@ export default function ShopClosed({ message }: ShopClosedProps) {
       <div className="max-w-2xl mx-auto text-center relative z-10 px-2">
         {/* Main Icon with Animation */}
         <div className="mb-6 sm:mb-8 relative">
-          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 border-2 border-slate-700/50 shadow-2xl relative group">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-linear-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 border-2 border-slate-700/50 shadow-2xl relative group">
             {/* Pulsing background glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500 animate-pulse"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-amber-500/20 to-orange-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500 animate-pulse"></div>
 
             {/* Icon */}
             <Clock
@@ -72,27 +72,27 @@ export default function ShopClosed({ message }: ShopClosedProps) {
           {/* Title */}
           <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-3 sm:mb-4 leading-tight px-2">
             <span className="text-white">We're </span>
-            <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent">
+            <span className="bg-linear-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent">
               Closed
             </span>
           </h1>
 
           {/* Decorative line */}
           <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
-            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-amber-500"></div>
+            <div className="h-px w-12 sm:w-16 bg-linear-to-r from-transparent to-amber-500"></div>
             <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-amber-500 rounded-full animate-pulse"></div>
-            <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-amber-500"></div>
+            <div className="h-px w-12 sm:w-16 bg-linear-to-l from-transparent to-amber-500"></div>
           </div>
         </div>
 
         {/* Content Card */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-700/50 shadow-2xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500">
-          {/* Subtle gradient overlay */}
-          <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+        <div className="bg-linear-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-700/50 shadow-2xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500">
+          {/* Subtle linear overlay */}
+          <div className="absolute inset-0 bg-linear-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
           {/* Chef Hat Icon */}
           <div className="relative inline-flex items-center justify-center mb-4 sm:mb-6">
-            <div className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-xl"></div>
+            <div className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-linear-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-xl"></div>
             <div className="relative w-12 h-12 sm:w-16 sm:h-16 bg-slate-800/50 rounded-xl sm:rounded-2xl flex items-center justify-center border border-slate-700/50">
               <ChefHat className="w-6 h-6 sm:w-8 sm:h-8 text-amber-400/70" />
             </div>
@@ -122,7 +122,7 @@ export default function ShopClosed({ message }: ShopClosedProps) {
           </div>
 
           {/* Divider */}
-          <div className="h-px bg-gradient-to-r from-transparent via-slate-700/50 to-transparent mb-6"></div>
+          <div className="h-px bg-linear-to-r from-transparent via-slate-700/50 to-transparent mb-6"></div>
 
           {/* Footer Text */}
           <div className="space-y-2 relative z-10">
