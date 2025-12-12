@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Package, Plus, Minus, ShoppingCart, Trash2, ChevronUp, ChevronDown } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 import Loader from "@/components/Loader";
 import BackButton from "../components/BackButton";
 import { Item } from "../types";
@@ -463,74 +464,89 @@ export default function LiveSellPage() {
       {/* Fixed Cart Summary at Bottom */}
       {cart.length > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-br from-slate-900 to-slate-800 border-t border-slate-700/50 shadow-2xl z-50">
-          {/* Arrow Indicator */}
-          <div className="absolute -top-6 left-1/2 transform -translate-x-1/2">
-            <ChevronUp className="w-6 h-6 text-emerald-400 animate-bounce" />
-          </div>
 
           {/* Cart Details Toggle */}
-          {showCartDetails && (
-            <div className="max-h-48 overflow-y-auto border-b border-slate-700/50 bg-slate-800/50">
-              <div className="container mx-auto px-3 sm:px-4 py-3 space-y-2">
-                {cart.map((cartItem, index) => (
-                  <div
-                    key={`${cartItem.itemId}-${cartItem.plateType || 'none'}-${index}`}
-                    className="flex items-center justify-between text-xs sm:text-sm bg-slate-700/30 rounded-lg p-2"
-                  >
-                    <div className="flex-1 min-w-0">
-                      <p className="text-white font-medium truncate">
-                        {cartItem.itemName}
-                        {cartItem.plateType && (
-                          <span className="text-slate-400 ml-1">
-                            ({cartItem.plateType === "half" ? "Half" : "Full"} plate)
-                          </span>
-                        )}
-                      </p>
-                      <p className="text-slate-400">
-                        Qty: {cartItem.quantity} × ₹{cartItem.price} = ₹{(cartItem.quantity * cartItem.price).toFixed(2)}
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => removeFromCart(cartItem.itemId, cartItem.plateType)}
-                      className="ml-2 p-1.5 hover:bg-red-500/20 rounded transition-colors"
-                    >
-                      <Trash2 className="w-3.5 h-3.5 text-red-400" />
-                    </button>
+          <AnimatePresence>
+            {showCartDetails && (
+              <motion.div
+                initial={{ height: 0, opacity: 0 }}
+                animate={{ height: "auto", opacity: 1 }}
+                exit={{ height: 0, opacity: 0 }}
+                transition={{ duration: 0.3, ease: "easeInOut" }}
+                className="overflow-hidden border-b border-slate-700/50 bg-slate-800/50"
+              >
+                <div className="max-h-48 overflow-y-auto">
+                  <div className="container mx-auto px-3 sm:px-4 py-3 space-y-2">
+                    {cart.map((cartItem, index) => (
+                      <motion.div
+                        key={`${cartItem.itemId}-${cartItem.plateType || 'none'}-${index}`}
+                        initial={{ opacity: 0, x: -20 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ duration: 0.2, delay: index * 0.05 }}
+                        className="flex items-center justify-between text-xs sm:text-sm bg-slate-700/30 rounded-lg p-2"
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-white font-medium truncate">
+                            {cartItem.itemName}
+                            {cartItem.plateType && (
+                              <span className="text-slate-400 ml-1">
+                                ({cartItem.plateType === "half" ? "Half" : "Full"} plate)
+                              </span>
+                            )}
+                          </p>
+                          <p className="text-slate-400">
+                            Qty: {cartItem.quantity} × ₹{cartItem.price} = ₹{(cartItem.quantity * cartItem.price).toFixed(2)}
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => removeFromCart(cartItem.itemId, cartItem.plateType)}
+                          className="ml-2 p-1.5 hover:bg-red-500/20 rounded transition-colors"
+                        >
+                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                        </button>
+                      </motion.div>
+                    ))}
                   </div>
-                ))}
-              </div>
-            </div>
-          )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {/* Main Cart Summary */}
           <div className="p-3 sm:p-4">
             <div className="container mx-auto px-3 sm:px-4">
               <div className="flex items-center justify-between gap-3 sm:gap-4">
                 <div className="flex-1">
-                  <button
-                    onClick={() => setShowCartDetails(!showCartDetails)}
-                    className="flex items-center gap-2 mb-1 group"
-                  >
-                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-                    <span className="text-xs sm:text-sm text-slate-400 group-hover:text-slate-300 transition-colors">
+                  <div className="flex items-center gap-2 mb-1">
+                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
+                    <span className="text-xs sm:text-sm text-slate-400">
                       {cart.length} {cart.length === 1 ? "item" : "items"}
                     </span>
-                    {showCartDetails ? (
-                      <ChevronDown className="w-4 h-4 text-slate-400" />
-                    ) : (
-                      <ChevronUp className="w-4 h-4 text-slate-400" />
-                    )}
-                  </button>
+                  </div>
                   <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">
                     ₹{totalAmount.toFixed(2)}
                   </p>
                 </div>
-                <button
-                  onClick={proceedToCheckout}
-                  className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/30 text-sm sm:text-base whitespace-nowrap"
-                >
-                  Proceed to Checkout
-                </button>
+                <div className="flex items-center gap-2 sm:gap-3">
+                  <button
+                    onClick={() => setShowCartDetails(!showCartDetails)}
+                    className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-emerald-500/50 rounded-lg transition-all duration-300 group cursor-pointer"
+                    aria-label={showCartDetails ? "Hide cart details" : "Show cart details"}
+                  >
+                    <motion.div
+                      animate={{ rotate: showCartDetails ? 180 : 0 }}
+                      transition={{ duration: 0.3, ease: "easeInOut" }}
+                    >
+                      <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                    </motion.div>
+                  </button>
+                  <button
+                    onClick={proceedToCheckout}
+                    className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/30 text-sm sm:text-base whitespace-nowrap"
+                  >
+                    Proceed to Checkout
+                  </button>
+                </div>
               </div>
             </div>
           </div>

@@ -8,6 +8,8 @@ import Loader from "@/components/Loader";
 import jsPDF from "jspdf";
 import SalesListSkeleton from "@/components/skeletons/SalesListSkeleton";
 import SalesSummarySkeleton from "@/components/skeletons/SalesSummarySkeleton";
+import Pagination from "@/components/Pagination";
+import { footerConfig } from "@/config/footer";
 
 interface SaleItem {
   id: string;
@@ -34,6 +36,10 @@ export default function SalesPage() {
   const [selectedDate, setSelectedDate] = useState<string>("");
   const [tempDate, setTempDate] = useState<string>(""); // Temporary date for calendar selection
   const [isGeneratingPDF, setIsGeneratingPDF] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalRevenue, setTotalRevenue] = useState(0);
+  const itemsPerPage = 10;
 
   useEffect(() => {
     checkSession();
@@ -62,7 +68,8 @@ export default function SalesPage() {
         setIsAuthenticated(true);
         // Fetch sales with today's date as default
         const today = new Date().toISOString().split("T")[0];
-        fetchSales(today);
+        setCurrentPage(1); // Reset to first page
+        fetchSales(today, 1);
       } else {
         window.location.href = "/login";
       }
@@ -74,26 +81,57 @@ export default function SalesPage() {
     }
   };
 
-  const fetchSales = async (date?: string) => {
+  const fetchSales = async (
+    date?: string,
+    page: number = 1,
+    updateTotals: boolean = true
+  ) => {
     setLoading(true);
     try {
-      const url = date ? `/api/sales?date=${date}` : "/api/sales";
+      const offset = (page - 1) * itemsPerPage;
+      const limit = itemsPerPage;
+
+      let url = `/api/sales?limit=${limit}&offset=${offset}`;
+      if (date) {
+        url += `&date=${date}`;
+      }
+
       const response = await fetch(url);
       if (!response.ok) {
         console.error("Failed to fetch sales:", response.status);
         setSales([]);
+        if (updateTotals) {
+          setTotalItems(0);
+          setTotalRevenue(0);
+        }
         return;
       }
 
       const data = await response.json();
       if (data.sales && Array.isArray(data.sales)) {
         setSales(data.sales);
+        // Only update totals when explicitly requested (e.g., date filter changes)
+        if (updateTotals) {
+          // API returns total count - must use data.total, not sales.length
+          // sales.length is only the current page items (max 10)
+          setTotalItems(data.total || 0);
+          // API returns total revenue across all pages
+          setTotalRevenue(data.totalRevenue || 0);
+        }
       } else {
         setSales([]);
+        if (updateTotals) {
+          setTotalItems(0);
+          setTotalRevenue(0);
+        }
       }
     } catch (error) {
       console.error("Error fetching sales:", error);
       setSales([]);
+      if (updateTotals) {
+        setTotalItems(0);
+        setTotalRevenue(0);
+      }
     } finally {
       setLoading(false);
     }
@@ -107,7 +145,8 @@ export default function SalesPage() {
   // Handle search button click - commit the date and fetch sales
   const handleSearch = () => {
     setSelectedDate(tempDate);
-    fetchSales(tempDate || undefined);
+    setCurrentPage(1); // Reset to first page on new search
+    fetchSales(tempDate || undefined, 1);
   };
 
   // Handle when user presses Enter in date input
@@ -122,13 +161,16 @@ export default function SalesPage() {
     const today = new Date().toISOString().split("T")[0];
     setSelectedDate(today);
     setTempDate(today);
-    fetchSales(today);
+    setCurrentPage(1); // Reset to first page
+    fetchSales(today, 1);
   };
 
-  const handleClearFilter = () => {
-    setSelectedDate("");
-    setTempDate("");
-    fetchSales();
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+    // Don't update totals when paginating - only fetch the sales list
+    fetchSales(selectedDate || undefined, page, false);
+    // Scroll to top of sales list
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const generateSalesReportPDF = () => {
@@ -147,7 +189,7 @@ export default function SalesPage() {
 
       // Disable automatic page numbering
       pdf.setProperties({
-        title: "Sales Report - Chinese Chekar",
+        title: `Sales Report - ${footerConfig.brand.name}`,
       });
 
       const pageWidth = pdf.internal.pageSize.getWidth();
@@ -157,16 +199,25 @@ export default function SalesPage() {
       // Header
       pdf.setFontSize(20);
       pdf.setFont("helvetica", "bold");
-      pdf.text("CHINESE CHEKAR", pageWidth / 2, yPos, { align: "center" });
+      pdf.text(footerConfig.brand.name.toUpperCase(), pageWidth / 2, yPos, {
+        align: "center",
+      });
       yPos += 6;
 
       pdf.setFontSize(12);
       pdf.setFont("helvetica", "normal");
-      pdf.text("123 Culinary Street, Food District, Howrah, West Bengal", pageWidth / 2, yPos, {
+      const addressLines = pdf.splitTextToSize(
+        footerConfig.contact.address,
+        pageWidth - margin * 2
+      );
+      addressLines.forEach((line: string) => {
+        pdf.text(line, pageWidth / 2, yPos, { align: "center" });
+        yPos += 4;
+      });
+      yPos += 2;
+      pdf.text(`Phone: ${footerConfig.contact.phone}`, pageWidth / 2, yPos, {
         align: "center",
       });
-      yPos += 4;
-      pdf.text("Phone: +91 (123) 456-7890", pageWidth / 2, yPos, { align: "center" });
       yPos += 6;
 
       // Divider
@@ -183,7 +234,7 @@ export default function SalesPage() {
       const reportDate = selectedDate
         ? new Date(selectedDate + "T00:00:00")
         : null;
-      
+
       if (selectedDate && reportDate) {
         const dateStr = reportDate.toLocaleDateString("en-IN", {
           day: "2-digit",
@@ -193,12 +244,12 @@ export default function SalesPage() {
         const dayName = reportDate.toLocaleDateString("en-IN", {
           weekday: "long",
         });
-        
+
         pdf.setFontSize(11);
         pdf.setFont("helvetica", "bold");
         pdf.text("Report Date:", margin, yPos);
         yPos += 5;
-        
+
         pdf.setFontSize(12);
         pdf.setFont("helvetica", "bold");
         pdf.text(`${dayName}, ${dateStr}`, margin, yPos);
@@ -239,8 +290,14 @@ export default function SalesPage() {
       yPos += 6;
 
       const totalSales = sales.length;
-      const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
-      const totalItems = sales.reduce((sum, sale) => sum + sale.items.length, 0);
+      const totalRevenue = sales.reduce(
+        (sum, sale) => sum + sale.totalAmount,
+        0
+      );
+      const totalItems = sales.reduce(
+        (sum, sale) => sum + sale.items.length,
+        0
+      );
       const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
 
       pdf.setFontSize(10);
@@ -249,9 +306,13 @@ export default function SalesPage() {
       yPos += 5;
       pdf.text(`Total Items Sold: ${totalItems}`, margin, yPos);
       yPos += 5;
-      pdf.text(`Average Order Value: Rs. ${avgOrderValue.toFixed(2)}`, margin, yPos);
+      pdf.text(
+        `Average Order Value: Rs. ${avgOrderValue.toFixed(2)}`,
+        margin,
+        yPos
+      );
       yPos += 5;
-      
+
       pdf.setFontSize(11);
       pdf.setFont("helvetica", "bold");
       pdf.text(`Total Revenue: Rs. ${totalRevenue.toFixed(2)}`, margin, yPos);
@@ -329,7 +390,11 @@ export default function SalesPage() {
           yPos += 4;
 
           // Quantity, Unit Price, Total
-          const detailsLine = `   Qty: ${item.quantity} × Rs. ${item.unitPrice.toFixed(2)} = Rs. ${item.totalPrice.toFixed(2)}`;
+          const detailsLine = `   Qty: ${
+            item.quantity
+          } × Rs. ${item.unitPrice.toFixed(2)} = Rs. ${item.totalPrice.toFixed(
+            2
+          )}`;
           pdf.text(detailsLine, margin + 5, yPos);
           yPos += 5;
         });
@@ -339,9 +404,14 @@ export default function SalesPage() {
         pdf.setFontSize(9);
         pdf.setFont("helvetica", "bold");
         pdf.text("Order Total:", margin + 5, yPos);
-        pdf.text(`Rs. ${sale.totalAmount.toFixed(2)}`, pageWidth - margin, yPos, {
-          align: "right",
-        });
+        pdf.text(
+          `Rs. ${sale.totalAmount.toFixed(2)}`,
+          pageWidth - margin,
+          yPos,
+          {
+            align: "right",
+          }
+        );
         yPos += 8;
 
         // Divider between orders
@@ -360,7 +430,9 @@ export default function SalesPage() {
 
       pdf.setFontSize(11);
       pdf.setFont("helvetica", "bold");
-      pdf.text("GRAND TOTAL", pageWidth - margin - 50, yPos, { align: "right" });
+      pdf.text("GRAND TOTAL", pageWidth - margin - 50, yPos, {
+        align: "right",
+      });
       pdf.setFontSize(12);
       pdf.text(`Rs. ${totalRevenue.toFixed(2)}`, pageWidth - margin, yPos, {
         align: "right",
@@ -400,8 +472,6 @@ export default function SalesPage() {
   if (!isAuthenticated) {
     return null;
   }
-
-  const totalRevenue = sales.reduce((sum, sale) => sum + sale.totalAmount, 0);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -460,14 +530,6 @@ export default function SalesPage() {
                     <span className="hidden sm:inline">Search</span>
                   </button>
                 </div>
-                {selectedDate && (
-                  <button
-                    onClick={handleClearFilter}
-                    className="px-3 sm:px-4 py-1.5 sm:py-2 bg-slate-700/50 border border-slate-600 text-slate-300 hover:bg-slate-700 rounded-lg transition-all duration-300 text-xs sm:text-sm font-medium cursor-pointer"
-                  >
-                    Clear
-                  </button>
-                )}
               </div>
             </div>
             <button
@@ -488,13 +550,17 @@ export default function SalesPage() {
           <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-slate-700/50 p-4 sm:p-6 mb-4 sm:mb-6">
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <p className="text-xs sm:text-sm text-slate-400 mb-1">Total Sales</p>
+                <p className="text-xs sm:text-sm text-slate-400 mb-1">
+                  Total Sales
+                </p>
                 <p className="text-xl sm:text-2xl md:text-3xl font-bold text-emerald-400">
-                  {sales.length}
+                  {totalItems}
                 </p>
               </div>
               <div>
-                <p className="text-xs sm:text-sm text-slate-400 mb-1">Total Revenue</p>
+                <p className="text-xs sm:text-sm text-slate-400 mb-1">
+                  Total Revenue
+                </p>
                 <p className="text-xl sm:text-2xl md:text-3xl font-bold text-amber-400">
                   ₹{totalRevenue.toFixed(2)}
                 </p>
@@ -508,78 +574,97 @@ export default function SalesPage() {
           <SalesListSkeleton />
         ) : sales.length === 0 ? (
           <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-slate-700/50 p-8 sm:p-12 text-center">
-            <p className="text-slate-400 mb-4 text-sm sm:text-base">No sales records found</p>
+            <p className="text-slate-400 mb-4 text-sm sm:text-base">
+              No sales records found
+            </p>
           </div>
         ) : (
-          <div className="space-y-3 sm:space-y-4">
-            {sales.map((sale) => {
-              const saleDate = new Date(sale.saleDate);
-              return (
-                <div
-                  key={sale.id}
-                  className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-slate-700/50 p-3 sm:p-4 hover:border-blue-500/50 transition-all duration-300"
-                >
-                  {/* Header */}
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 pb-3 border-b border-slate-700/50">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <Receipt className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                        <p className="text-sm sm:text-base font-semibold text-white truncate">
-                          {sale.invoiceNumber}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
-                        <span>
-                          {saleDate.toLocaleDateString("en-IN", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })}{" "}
-                          {saleDate.toLocaleTimeString("en-IN", {
-                            hour: "2-digit",
-                            minute: "2-digit",
-                            hour12: true,
-                          })}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-lg sm:text-xl md:text-2xl font-bold text-emerald-400">
-                        ₹{sale.totalAmount.toFixed(2)}
-                      </p>
-                      <p className="text-xs sm:text-sm text-slate-400">
-                        {sale.items.length} {sale.items.length === 1 ? "item" : "items"}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Items */}
-                  <div className="space-y-2">
-                    {sale.items.map((item, index) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between text-xs sm:text-sm"
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium truncate">{item.itemName}</p>
-                          <p className="text-slate-400">
-                            ₹{item.unitPrice.toFixed(2)} × {item.quantity}
+          <>
+            <div className="space-y-3 sm:space-y-4">
+              {sales.map((sale) => {
+                const saleDate = new Date(sale.saleDate);
+                return (
+                  <div
+                    key={sale.id}
+                    className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-slate-700/50 p-3 sm:p-4 hover:border-blue-500/50 transition-all duration-300"
+                  >
+                    {/* Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 sm:gap-4 mb-3 pb-3 border-b border-slate-700/50">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <Receipt className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <p className="text-sm sm:text-base font-semibold text-white truncate">
+                            {sale.invoiceNumber}
                           </p>
                         </div>
-                        <p className="text-amber-400 font-semibold ml-2">
-                          ₹{item.totalPrice.toFixed(2)}
+                        <div className="flex items-center gap-2 text-xs sm:text-sm text-slate-400">
+                          <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+                          <span>
+                            {saleDate.toLocaleDateString("en-IN", {
+                              day: "2-digit",
+                              month: "2-digit",
+                              year: "numeric",
+                            })}{" "}
+                            {saleDate.toLocaleTimeString("en-IN", {
+                              hour: "2-digit",
+                              minute: "2-digit",
+                              hour12: true,
+                            })}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg sm:text-xl md:text-2xl font-bold text-emerald-400">
+                          ₹{sale.totalAmount.toFixed(2)}
+                        </p>
+                        <p className="text-xs sm:text-sm text-slate-400">
+                          {sale.items.length}{" "}
+                          {sale.items.length === 1 ? "item" : "items"}
                         </p>
                       </div>
-                    ))}
+                    </div>
+
+                    {/* Items */}
+                    <div className="space-y-2">
+                      {sale.items.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between text-xs sm:text-sm"
+                        >
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white font-medium truncate">
+                              {item.itemName}
+                            </p>
+                            <p className="text-slate-400">
+                              ₹{item.unitPrice.toFixed(2)} × {item.quantity}
+                            </p>
+                          </div>
+                          <p className="text-amber-400 font-semibold ml-2">
+                            ₹{item.totalPrice.toFixed(2)}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+
+            {/* Pagination */}
+            {totalItems > 0 && (
+              <div className="mt-6 sm:mt-8">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={Math.ceil(totalItems / itemsPerPage)}
+                  onPageChange={handlePageChange}
+                  itemsPerPage={itemsPerPage}
+                  totalItems={totalItems}
+                />
+              </div>
+            )}
+          </>
         )}
       </div>
     </div>
   );
 }
-

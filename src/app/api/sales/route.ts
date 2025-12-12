@@ -158,9 +158,22 @@ export async function GET(request: Request) {
       where: whereClause,
     });
 
+    // Calculate total revenue across all sales (not just current page)
+    const allSalesForTotal = await prisma.sale.findMany({
+      where: whereClause,
+      select: {
+        totalAmount: true,
+      },
+    });
+    const totalRevenue = allSalesForTotal.reduce(
+      (sum, sale) => sum + sale.totalAmount,
+      0
+    );
+
     return NextResponse.json({
       sales,
       total,
+      totalRevenue,
       limit,
       offset,
     });

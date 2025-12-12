@@ -1,24 +1,32 @@
 import type { Metadata } from "next";
-import { Cormorant_Garamond, Work_Sans } from "next/font/google";
+import { Playfair_Display, Inter, Dancing_Script } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TopProgressBar from "@/components/TopProgressBar";
 
-// Premium serif font for headings and elegant text
-const cormorant = Cormorant_Garamond({
+// Elegant serif font for headings - perfect for restaurant branding
+const playfair = Playfair_Display({
   variable: "--font-heading",
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
+  weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
   style: ["normal", "italic"],
 });
 
-// Clean, modern sans-serif for body text
-const workSans = Work_Sans({
+// Clean, modern sans-serif for body text - excellent readability
+const inter = Inter({
   variable: "--font-body",
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+});
+
+// Cursive handwriting font for navbar branding
+const dancingScript = Dancing_Script({
+  variable: "--font-branding",
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -35,7 +43,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${cormorant.variable} ${workSans.variable} antialiased bg-dark-bg text-text-main flex flex-col min-h-screen`}
+        className={`${playfair.variable} ${inter.variable} ${dancingScript.variable} antialiased bg-dark-bg text-text-main flex flex-col min-h-screen`}
       >
         <Navbar />
         <TopProgressBar />
