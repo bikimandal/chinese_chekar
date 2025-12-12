@@ -15,6 +15,7 @@ interface CartItem {
   price: number;
   quantity: number;
   stock: number;
+  plateType?: "half" | "full" | null; // "half" or "full" or null if product doesn't have half/full option
 }
 
 export default function LiveSellPage() {
@@ -24,6 +25,8 @@ export default function LiveSellPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
+  // Track plate type selection for each item (itemId -> "half" | "full")
+  const [plateSelections, setPlateSelections] = useState<Record<string, "half" | "full">>({});
 
   useEffect(() => {
     checkSession();
@@ -82,6 +85,14 @@ export default function LiveSellPage() {
       if (Array.isArray(data)) {
         const enabledItems = data.filter((item: Item) => item.isAvailable === true);
         setItems(enabledItems);
+        // Initialize plate selections to "half" for items with half/full option
+        const initialSelections: Record<string, "half" | "full"> = {};
+        enabledItems.forEach((item: Item) => {
+          if (item.product?.hasHalfFullPlate) {
+            initialSelections[item.id] = "half";
+          }
+        });
+        setPlateSelections(initialSelections);
       } else {
         setItems([]);
       }
@@ -93,15 +104,39 @@ export default function LiveSellPage() {
     }
   };
 
+  const getItemPrice = (item: Item, plateType?: "half" | "full" | null): number => {
+    if (!item.product?.hasHalfFullPlate || !plateType) {
+      return item.price;
+    }
+    if (plateType === "half" && item.product.halfPlatePrice) {
+      return item.product.halfPlatePrice;
+    }
+    if (plateType === "full" && item.product.fullPlatePrice) {
+      return item.product.fullPlatePrice;
+    }
+    return item.price;
+  };
+
   const addToCart = (item: Item) => {
-    const existingItem = cart.find((ci) => ci.itemId === item.id);
+    const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
+    const plateType = hasHalfFull ? (plateSelections[item.id] || "half") : null;
+    const price = getItemPrice(item, plateType);
+    
+    // For items with half/full, we need to check if same item with same plate type exists
+    const cartKey = hasHalfFull ? `${item.id}-${plateType}` : item.id;
+    const existingItem = cart.find((ci) => {
+      if (hasHalfFull) {
+        return ci.itemId === item.id && ci.plateType === plateType;
+      }
+      return ci.itemId === item.id;
+    });
     
     if (existingItem) {
       // Increase quantity if stock allows
       if (existingItem.quantity < item.stock) {
         setCart(
           cart.map((ci) =>
-            ci.itemId === item.id
+            ci.itemId === item.id && ci.plateType === plateType
               ? { ...ci, quantity: ci.quantity + 1 }
               : ci
           )
@@ -115,39 +150,64 @@ export default function LiveSellPage() {
           {
             itemId: item.id,
             itemName: item.name,
-            price: item.price,
+            price: price,
             quantity: 1,
             stock: item.stock,
+            plateType: plateType,
           },
         ]);
       }
     }
   };
 
-  const removeFromCart = (itemId: string) => {
-    setCart(cart.filter((ci) => ci.itemId !== itemId));
+  const togglePlateType = (itemId: string, currentType: "half" | "full") => {
+    const newType = currentType === "half" ? "full" : "half";
+    // Only update the selection for adding new items, don't modify existing cart items
+    setPlateSelections((prev) => ({ ...prev, [itemId]: newType }));
   };
 
-  const updateQuantity = (itemId: string, change: number) => {
-    setCart(
-      cart.map((ci) => {
-        if (ci.itemId === itemId) {
+  const removeFromCart = (itemId: string, plateType?: "half" | "full" | null) => {
+    if (plateType !== undefined) {
+      // Remove specific item with specific plate type
+      setCart(cart.filter((ci) => !(ci.itemId === itemId && ci.plateType === plateType)));
+    } else {
+      // Remove all instances of this item
+      setCart(cart.filter((ci) => ci.itemId !== itemId));
+    }
+  };
+
+  const updateQuantity = (itemId: string, change: number, plateType?: "half" | "full" | null) => {
+    setCart((prevCart) => {
+      // First, calculate total quantity across all plate types for this item
+      const allCartItemsForProduct = prevCart.filter((c) => c.itemId === itemId);
+      const totalQuantity = allCartItemsForProduct.reduce((sum, c) => sum + c.quantity, 0);
+      
+      // Get the item to check stock
+      const item = items.find((i) => i.id === itemId);
+      const maxQuantity = item ? item.stock : 0;
+      
+      // Check if total quantity (including change) exceeds stock
+      const newTotalQuantity = totalQuantity + change;
+      if (newTotalQuantity > maxQuantity) {
+        return prevCart; // Don't allow more than stock
+      }
+      
+      // Update the specific cart item matching itemId and plateType
+      return prevCart.map((ci) => {
+        const matches = ci.itemId === itemId && (plateType !== undefined ? ci.plateType === plateType : true);
+        if (matches) {
           const newQuantity = ci.quantity + change;
-          // Get current stock from items list
-          const item = items.find((i) => i.id === itemId);
-          const maxQuantity = item ? item.stock : ci.stock;
           
           if (newQuantity <= 0) {
-            return ci; // Don't allow negative
+            // Remove this cart item if quantity becomes 0
+            return null;
           }
-          if (newQuantity > maxQuantity) {
-            return ci; // Don't allow more than stock
-          }
+          
           return { ...ci, quantity: newQuantity };
         }
         return ci;
-      })
-    );
+      }).filter((ci) => ci !== null) as CartItem[];
+    });
   };
 
   const getTotalAmount = () => {
@@ -220,8 +280,18 @@ export default function LiveSellPage() {
         ) : (
           <div className="space-y-2 sm:space-y-3">
             {enabledItems.map((item) => {
-              const cartItem = cart.find((ci) => ci.itemId === item.id);
+              const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
+              const currentPlateType = plateSelections[item.id] || (hasHalfFull ? "half" : null);
+              const displayPrice = getItemPrice(item, currentPlateType);
+              // Find cart items for this item with the current plate type
+              const cartItem = cart.find((ci) => 
+                ci.itemId === item.id && 
+                (hasHalfFull ? ci.plateType === currentPlateType : !ci.plateType)
+              );
               const quantity = cartItem?.quantity || 0;
+              // Get all cart items for this product to show total in cart
+              const allCartItemsForProduct = cart.filter((ci) => ci.itemId === item.id);
+              const totalInCart = allCartItemsForProduct.reduce((sum, ci) => sum + ci.quantity, 0);
               const isOutOfStock = item.stock === 0;
 
               return (
@@ -250,14 +320,33 @@ export default function LiveSellPage() {
 
                     {/* Content */}
                     <div className="flex-1 min-w-0">
-                      <h3 className={`text-sm sm:text-base font-semibold mb-1 truncate ${
-                        isOutOfStock ? "text-slate-500" : "text-white"
-                      }`}>
-                        {item.name}
-                        {isOutOfStock && (
-                          <span className="ml-2 text-xs text-red-400">(Out of Stock)</span>
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
+                        <h3 className={`text-sm sm:text-base font-semibold truncate ${
+                          isOutOfStock ? "text-slate-500" : "text-white"
+                        }`}>
+                          {item.name}
+                        </h3>
+                        {totalInCart > 0 && (
+                          <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-[10px] font-semibold text-emerald-400">
+                            {totalInCart} in cart
+                          </span>
                         )}
-                      </h3>
+                        {isOutOfStock && (
+                          <span className="text-xs text-red-400">(Out of Stock)</span>
+                        )}
+                      </div>
+                      {/* Show cart items breakdown if multiple plate types in cart */}
+                      {hasHalfFull && allCartItemsForProduct.length > 0 && (
+                        <div className="mb-2 space-y-0.5">
+                          {allCartItemsForProduct.map((cartItem, idx) => (
+                            <div key={idx} className="text-[10px] text-slate-400 flex items-center gap-2">
+                              <span className="px-1.5 py-0.5 bg-slate-700/30 rounded">
+                                {cartItem.plateType === "half" ? "Half" : "Full"} plate: {cartItem.quantity} × ₹{cartItem.price} = ₹{(cartItem.quantity * cartItem.price).toFixed(2)}
+                              </span>
+                            </div>
+                          ))}
+                        </div>
+                      )}
                       <div className="flex items-center gap-3 mb-2">
                         <div>
                           <p className={`text-xs ${isOutOfStock ? "text-slate-600" : "text-slate-500"}`}>
@@ -266,7 +355,7 @@ export default function LiveSellPage() {
                           <p className={`text-sm sm:text-base font-bold ${
                             isOutOfStock ? "text-slate-500" : "text-amber-400"
                           }`}>
-                            ₹{item.price}
+                            ₹{displayPrice}
                           </p>
                         </div>
                         <div>
@@ -288,29 +377,60 @@ export default function LiveSellPage() {
                           </p>
                         </div>
                       </div>
+                      {/* Half/Full Plate Toggle */}
+                      {hasHalfFull && !isOutOfStock && (
+                        <div className="mb-2">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              onClick={() => togglePlateType(item.id, currentPlateType || "half")}
+                              className="flex items-center gap-2 px-3 py-1.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg transition-all text-xs sm:text-sm cursor-pointer"
+                            >
+                              <span className={`px-2 py-0.5 rounded ${currentPlateType === "half" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
+                                Half
+                              </span>
+                              <span className="text-slate-500">/</span>
+                              <span className={`px-2 py-0.5 rounded ${currentPlateType === "full" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
+                                Full
+                              </span>
+                            </button>
+                            {allCartItemsForProduct.length > 0 && (
+                              <span className="text-[10px] text-slate-500 italic">
+                                Toggle to add different plate type
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
 
                     {/* Quantity Controls */}
                     {quantity > 0 ? (
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <button
-                          onClick={() => updateQuantity(item.id, -1)}
+                          onClick={() => updateQuantity(item.id, -1, currentPlateType)}
                           className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-white transition-all active:scale-95"
                         >
                           <Minus className="w-4 h-4" />
                         </button>
-                        <span className="w-8 sm:w-10 text-center text-sm sm:text-base font-bold text-white">
-                          {quantity}
-                        </span>
+                        <div className="flex flex-col items-center">
+                          <span className="w-8 sm:w-10 text-center text-sm sm:text-base font-bold text-white">
+                            {quantity}
+                          </span>
+                          {hasHalfFull && (
+                            <span className="text-[9px] text-slate-500">
+                              {currentPlateType === "half" ? "Half" : "Full"}
+                            </span>
+                          )}
+                        </div>
                         <button
-                          onClick={() => updateQuantity(item.id, 1)}
-                          disabled={quantity >= item.stock}
+                          onClick={() => updateQuantity(item.id, 1, currentPlateType)}
+                          disabled={totalInCart >= item.stock}
                           className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded-lg text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           <Plus className="w-4 h-4" />
                         </button>
                         <button
-                          onClick={() => removeFromCart(item.id)}
+                          onClick={() => removeFromCart(item.id, currentPlateType)}
                           className="w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 transition-all active:scale-95"
                         >
                           <Trash2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />

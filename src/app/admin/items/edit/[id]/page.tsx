@@ -264,7 +264,7 @@ export default function EditItemPage() {
                 <p className="text-sm text-amber-400 mt-2">
                   No products available.{" "}
                   <Link
-                    href="/admin/controls"
+                    href="/admin/product-templates"
                     className="underline hover:text-amber-300"
                   >
                     Create products in Product Templates

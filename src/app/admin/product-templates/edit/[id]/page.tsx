@@ -5,13 +5,17 @@ import { useRouter, useParams } from "next/navigation";
 import { Save, X, Upload } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/components/Loader";
-import BackButton from "../../components/BackButton";
+import BackButton from "../../../components/BackButton";
+import CustomToggle from "@/components/CustomToggle";
 
 interface Product {
   id: string;
   name: string;
   description?: string;
   image?: string;
+  hasHalfFullPlate?: boolean;
+  halfPlatePrice?: number | null;
+  fullPlatePrice?: number | null;
 }
 
 export default function EditProductPage() {
@@ -30,6 +34,10 @@ export default function EditProductPage() {
     name: "",
     description: "",
     image: "",
+    hasHalfFullPlate: true,
+    halfPlatePrice: "",
+    fullPlatePrice: "",
+    price: "", // Single price when hasHalfFullPlate is false
   });
   const [selectedImageFile, setSelectedImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
@@ -77,10 +85,15 @@ export default function EditProductPage() {
       }
 
       const product: Product = await response.json();
+      const hasHalfFull = product.hasHalfFullPlate ?? true;
       setFormData({
         name: product.name,
         description: product.description || "",
         image: product.image || "",
+        hasHalfFullPlate: hasHalfFull,
+        halfPlatePrice: product.halfPlatePrice?.toString() || "",
+        fullPlatePrice: product.fullPlatePrice?.toString() || "",
+        price: hasHalfFull ? "" : (product.fullPlatePrice?.toString() || ""), // Use fullPlatePrice as price when checkbox is off
       });
       if (product.image) {
         setImagePreview(product.image);
@@ -134,6 +147,25 @@ export default function EditProductPage() {
       return;
     }
 
+    if (formData.hasHalfFullPlate) {
+      if (!formData.halfPlatePrice || parseFloat(formData.halfPlatePrice) <= 0) {
+        setError("Half plate price is required and must be greater than 0");
+        setLoading(false);
+        return;
+      }
+      if (!formData.fullPlatePrice || parseFloat(formData.fullPlatePrice) <= 0) {
+        setError("Full plate price is required and must be greater than 0");
+        setLoading(false);
+        return;
+      }
+    } else {
+      if (!formData.price || parseFloat(formData.price) <= 0) {
+        setError("Price is required and must be greater than 0");
+        setLoading(false);
+        return;
+      }
+    }
+
     let imageUrl = formData.image || "";
 
     // Upload image if a new file was selected
@@ -182,12 +214,15 @@ export default function EditProductPage() {
           name: productName,
           description: formData.description || "",
           image: imageUrl,
+          hasHalfFullPlate: formData.hasHalfFullPlate,
+          halfPlatePrice: formData.hasHalfFullPlate && formData.halfPlatePrice ? parseFloat(formData.halfPlatePrice) : null,
+          fullPlatePrice: formData.hasHalfFullPlate && formData.fullPlatePrice ? parseFloat(formData.fullPlatePrice) : (formData.price ? parseFloat(formData.price) : null),
         }),
       });
 
       if (response.ok) {
         // Success - redirect to controls page
-        router.push("/admin/controls");
+        router.push("/admin/product-templates");
       } else {
         const data = await response.json();
         const errorMessage = data.details
@@ -225,7 +260,7 @@ export default function EditProductPage() {
                 Update the details below to modify this product template
               </p>
             </div>
-            <BackButton href="/admin/controls" label="Back" />
+            <BackButton href="/admin/product-templates" label="Back" />
           </div>
         </div>
 
@@ -277,6 +312,89 @@ export default function EditProductPage() {
                 className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all resize-none disabled:opacity-50"
                 placeholder="Brief description of the product..."
               />
+            </div>
+
+            {/* Half/Full Plate Option */}
+            <div className="bg-slate-900/30 p-4 rounded-xl border border-slate-700/50">
+              <CustomToggle
+                checked={formData.hasHalfFullPlate}
+                onChange={(isChecked) => {
+                  setFormData((prev) => ({
+                    ...prev,
+                    hasHalfFullPlate: isChecked,
+                    // When unchecking, populate price with fullPlatePrice if it exists
+                    price: !isChecked && prev.fullPlatePrice ? prev.fullPlatePrice : prev.price,
+                    // When checking, clear price field
+                    ...(isChecked ? { price: "" } : {}),
+                  }));
+                }}
+                disabled={loading}
+                label="Half plate / Full plate segregation available"
+                description="If enabled, customers can order this product in both half and full plate sizes"
+              />
+
+              {formData.hasHalfFullPlate ? (
+                <div className="mt-4 ml-8 space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Half Plate Price <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.halfPlatePrice ?? ""}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, halfPlatePrice: e.target.value }));
+                      }}
+                      required={formData.hasHalfFullPlate}
+                      disabled={loading}
+                      className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                      placeholder="e.g., 120.00"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-slate-300 mb-2">
+                      Full Plate Price <span className="text-red-400">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.fullPlatePrice ?? ""}
+                      onChange={(e) => {
+                        setFormData((prev) => ({ ...prev, fullPlatePrice: e.target.value }));
+                      }}
+                      required={formData.hasHalfFullPlate}
+                      disabled={loading}
+                      className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                      placeholder="e.g., 200.00"
+                    />
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-4 ml-8">
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Price <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.price ?? ""}
+                    onChange={(e) => {
+                      setFormData((prev) => ({ ...prev, price: e.target.value }));
+                    }}
+                    required={!formData.hasHalfFullPlate}
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                    placeholder="e.g., 200.00"
+                  />
+                  <p className="text-xs text-slate-500 mt-2">
+                    This price will be used as the full plate price
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Image Upload */}
@@ -337,7 +455,7 @@ export default function EditProductPage() {
                 {loading ? "Saving..." : "Save Changes"}
               </button>
               <Link
-                href="/admin/controls"
+                href="/admin/product-templates"
                 className="flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-slate-800/50 border border-slate-700 text-slate-300 hover:text-white hover:border-slate-600 rounded-xl transition-all duration-300 text-sm sm:text-base"
               >
                 <X className="w-4 h-4 sm:w-5 sm:h-5" />

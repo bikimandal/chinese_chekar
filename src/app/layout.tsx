@@ -39,7 +39,7 @@ export default function RootLayout({
       >
         <Navbar />
         <TopProgressBar />
-        <main className="grow pt-20">{children}</main>
+        <main className="grow pt-16 sm:pt-20">{children}</main>
         <Footer />
       </body>
     </html>

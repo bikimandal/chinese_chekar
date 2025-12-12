@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import { ArrowLeft, Plus, Edit2, Trash2 } from "lucide-react";
 import Loader from "@/components/Loader";
+import BackButton from "../components/BackButton";
 
 interface Product {
   id: string;
@@ -124,7 +125,7 @@ export default function AdminControlsPage() {
             <div className="flex items-center gap-2 sm:gap-3 w-full sm:w-auto">
               <BackButton href="/admin" label="Back" />
               <Link
-                href="/admin/controls/new"
+                href="/admin/product-templates/new"
                 className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 shadow-lg shadow-amber-500/30 text-sm sm:text-base flex-1 sm:flex-initial cursor-pointer"
               >
                 <Plus className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -150,7 +151,7 @@ export default function AdminControlsPage() {
             <div className="p-8 sm:p-12 text-center">
               <p className="text-slate-400 mb-4 text-sm sm:text-base">No products found</p>
               <Link
-                href="/admin/controls/new"
+                href="/admin/product-templates/new"
                 className="inline-block px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 text-sm sm:text-base"
               >
                 Create Your First Product
@@ -186,7 +187,7 @@ export default function AdminControlsPage() {
                     )}
                     <div className="flex gap-2">
                       <Link
-                        href={`/admin/controls/edit/${product.id}`}
+                        href={`/admin/product-templates/edit/${product.id}`}
                         className="flex-1 flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-slate-800/50 border border-slate-700 text-slate-300 hover:text-white hover:border-amber-500/50 rounded-lg transition-all text-sm"
                       >
                         <Edit2 className="w-4 h-4" />

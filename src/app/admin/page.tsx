@@ -146,6 +146,15 @@ export default function AdminPage() {
 
   const handleToggleAvailability = async (item: Item) => {
     setTogglingItemId(item.id);
+    const previousAvailability = item.isAvailable;
+
+    // Optimistically update the UI
+    setItems((prevItems) =>
+      prevItems.map((i) =>
+        i.id === item.id ? { ...i, isAvailable: !i.isAvailable } : i
+      )
+    );
+
     try {
       const response = await fetch(`/api/items/${item.id}`, {
         method: "PUT",
@@ -157,13 +166,23 @@ export default function AdminPage() {
         }),
       });
 
-      if (response.ok) {
-        await fetchItems();
-      } else {
+      if (!response.ok) {
+        // Revert on error
+        setItems((prevItems) =>
+          prevItems.map((i) =>
+            i.id === item.id ? { ...i, isAvailable: previousAvailability } : i
+          )
+        );
         const data = await response.json();
         alert(data.error || "Failed to update availability");
       }
     } catch (error) {
+      // Revert on error
+      setItems((prevItems) =>
+        prevItems.map((i) =>
+          i.id === item.id ? { ...i, isAvailable: previousAvailability } : i
+        )
+      );
       console.error("Error toggling availability:", error);
       alert("An error occurred while updating availability");
     } finally {

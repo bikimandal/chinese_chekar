@@ -14,6 +14,7 @@ interface CartItem {
   price: number;
   quantity: number;
   stock: number;
+  plateType?: "half" | "full" | null;
 }
 
 interface Sale {
@@ -23,6 +24,7 @@ interface Sale {
   saleDate: string;
   items: Array<{
     itemName: string;
+    plateType?: string | null;
     quantity: number;
     unitPrice: number;
     totalPrice: number;
@@ -87,13 +89,19 @@ export default function CheckoutPage() {
     setError("");
 
     try {
-      const saleItems = cart.map((item) => ({
-        itemId: item.itemId,
-        itemName: item.itemName,
-        quantity: item.quantity,
-        unitPrice: item.price,
-        totalPrice: item.price * item.quantity,
-      }));
+      const saleItems = cart.map((item) => {
+        const displayName = item.plateType 
+          ? `${item.itemName} (${item.plateType === "half" ? "Half plate" : "Full plate"})`
+          : item.itemName;
+        return {
+          itemId: item.itemId,
+          itemName: displayName,
+          plateType: item.plateType || null,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalPrice: item.price * item.quantity,
+        };
+      });
 
       const response = await fetch("/api/sales", {
         method: "POST",
@@ -177,9 +185,6 @@ export default function CheckoutPage() {
             </div>
             <BackButton href="/admin/live-sell" label="Back to Cart" />
           </div>
-          <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-200 to-green-200 bg-clip-text text-transparent">
-            Checkout
-          </h1>
         </div>
 
         {!sale ? (
@@ -190,24 +195,29 @@ export default function CheckoutPage() {
                 Order Summary
               </h2>
               <div className="space-y-3">
-                {cart.map((item) => (
-                  <div
-                    key={item.itemId}
-                    className="flex items-center justify-between pb-3 border-b border-slate-700/50 last:border-0"
-                  >
-                    <div className="flex-1">
-                      <p className="text-sm sm:text-base font-medium text-white">
-                        {item.itemName}
-                      </p>
-                      <p className="text-xs text-slate-400">
-                        ₹{item.price} × {item.quantity}
+                {cart.map((item) => {
+                  const displayName = item.plateType 
+                    ? `${item.itemName} (${item.plateType === "half" ? "Half plate" : "Full plate"})`
+                    : item.itemName;
+                  return (
+                    <div
+                      key={item.itemId}
+                      className="flex items-center justify-between pb-3 border-b border-slate-700/50 last:border-0"
+                    >
+                      <div className="flex-1">
+                        <p className="text-sm sm:text-base font-medium text-white">
+                          {displayName}
+                        </p>
+                        <p className="text-xs text-slate-400">
+                          ₹{item.price} × {item.quantity}
+                        </p>
+                      </div>
+                      <p className="text-sm sm:text-base font-bold text-amber-400">
+                        ₹{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
-                    <p className="text-sm sm:text-base font-bold text-amber-400">
-                      ₹{(item.price * item.quantity).toFixed(2)}
-                    </p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
               <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between">
                 <span className="text-base sm:text-lg font-semibold text-white">

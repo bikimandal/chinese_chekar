@@ -12,6 +12,9 @@ interface Product {
   name: string;
   description?: string;
   image?: string;
+  hasHalfFullPlate?: boolean;
+  halfPlatePrice?: number | null;
+  fullPlatePrice?: number | null;
 }
 
 export default function NewItemPage() {
@@ -26,9 +29,12 @@ export default function NewItemPage() {
     name: "",
     description: "",
     price: "",
+    halfPlatePrice: "",
+    fullPlatePrice: "",
     stock: "",
     productId: "",
     isAvailable: true,
+    hasHalfFullPlate: false,
   });
 
   useEffect(() => {
@@ -81,10 +87,25 @@ export default function NewItemPage() {
         (p) => p.id === formData.productId
       );
       if (selectedProduct) {
+        const hasHalfFull = selectedProduct.hasHalfFullPlate ?? false;
         setFormData((prev) => ({
           ...prev,
           name: selectedProduct.name,
           description: selectedProduct.description || "",
+          hasHalfFullPlate: hasHalfFull,
+          // If product has half/full plate, populate both prices
+          halfPlatePrice: hasHalfFull && selectedProduct.halfPlatePrice
+            ? selectedProduct.halfPlatePrice.toString()
+            : "",
+          fullPlatePrice: hasHalfFull && selectedProduct.fullPlatePrice
+            ? selectedProduct.fullPlatePrice.toString()
+            : selectedProduct.fullPlatePrice
+            ? selectedProduct.fullPlatePrice.toString()
+            : "",
+          // If product doesn't have half/full plate, use fullPlatePrice as single price
+          price: !hasHalfFull && selectedProduct.fullPlatePrice
+            ? selectedProduct.fullPlatePrice.toString()
+            : "",
         }));
       }
     }
@@ -108,10 +129,24 @@ export default function NewItemPage() {
       return;
     }
 
-    if (!formData.price || parseFloat(formData.price) <= 0) {
-      setError("Please enter a valid price");
-      setLoading(false);
-      return;
+    // Validate prices based on half/full plate option
+    if (formData.hasHalfFullPlate) {
+      if (!formData.halfPlatePrice || parseFloat(formData.halfPlatePrice) <= 0) {
+        setError("Please enter a valid half plate price");
+        setLoading(false);
+        return;
+      }
+      if (!formData.fullPlatePrice || parseFloat(formData.fullPlatePrice) <= 0) {
+        setError("Please enter a valid full plate price");
+        setLoading(false);
+        return;
+      }
+    } else {
+      if (!formData.price || parseFloat(formData.price) <= 0) {
+        setError("Please enter a valid price");
+        setLoading(false);
+        return;
+      }
     }
 
     if (formData.stock === "" || parseInt(formData.stock) < 0) {
@@ -129,7 +164,9 @@ export default function NewItemPage() {
         body: JSON.stringify({
           name: formData.name,
           description: formData.description,
-          price: parseFloat(formData.price),
+          price: formData.hasHalfFullPlate
+            ? parseFloat(formData.fullPlatePrice)
+            : parseFloat(formData.price),
           stock: parseInt(formData.stock),
           productId: formData.productId,
           isAvailable: formData.isAvailable,
@@ -199,9 +236,25 @@ export default function NewItemPage() {
               </label>
               <select
                 value={formData.productId}
-                onChange={(e) =>
-                  setFormData({ ...formData, productId: e.target.value })
-                }
+                onChange={(e) => {
+                  const productId = e.target.value;
+                  if (!productId) {
+                    // Reset form when no product is selected
+                    setFormData({
+                      name: "",
+                      description: "",
+                      price: "",
+                      halfPlatePrice: "",
+                      fullPlatePrice: "",
+                      stock: "",
+                      productId: "",
+                      isAvailable: true,
+                      hasHalfFullPlate: false,
+                    });
+                  } else {
+                    setFormData({ ...formData, productId });
+                  }
+                }}
                 required
                 className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all appearance-none cursor-pointer"
               >
@@ -222,7 +275,7 @@ export default function NewItemPage() {
                 <p className="text-sm text-amber-400 mt-2">
                   No products available.{" "}
                   <Link
-                    href="/admin/controls"
+                    href="/admin/product-templates"
                     className="underline hover:text-amber-300"
                   >
                     Create products in Product Templates
@@ -266,8 +319,47 @@ export default function NewItemPage() {
               />
             </div>
 
-            {/* Price and Stock */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Price Fields - Dynamic based on product selection */}
+            {formData.hasHalfFullPlate ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Half Plate Price (₹) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.halfPlatePrice}
+                    onChange={(e) =>
+                      setFormData({ ...formData, halfPlatePrice: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                    placeholder="0.00"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-300 mb-2">
+                    Full Plate Price (₹) <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    value={formData.fullPlatePrice}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fullPlatePrice: e.target.value })
+                    }
+                    required
+                    disabled={loading}
+                    className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                    placeholder="0.00"
+                  />
+                </div>
+              </div>
+            ) : (
               <div>
                 <label className="block text-sm font-medium text-slate-300 mb-2">
                   Price (₹) <span className="text-red-400">*</span>
@@ -286,24 +378,25 @@ export default function NewItemPage() {
                   placeholder="0.00"
                 />
               </div>
+            )}
 
-              <div>
-                <label className="block text-sm font-medium text-slate-300 mb-2">
-                  Stock Quantity <span className="text-red-400">*</span>
-                </label>
-                <input
-                  type="number"
-                  min="0"
-                  value={formData.stock}
-                  onChange={(e) =>
-                    setFormData({ ...formData, stock: e.target.value })
-                  }
-                  required
-                  disabled={loading}
-                  className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
-                  placeholder="0"
-                />
-              </div>
+            {/* Stock Quantity */}
+            <div>
+              <label className="block text-sm font-medium text-slate-300 mb-2">
+                Stock Quantity <span className="text-red-400">*</span>
+              </label>
+              <input
+                type="number"
+                min="0"
+                value={formData.stock}
+                onChange={(e) =>
+                  setFormData({ ...formData, stock: e.target.value })
+                }
+                required
+                disabled={loading}
+                className="w-full px-4 py-3 bg-slate-900/50 border border-slate-700 rounded-xl text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
+                placeholder="0"
+              />
             </div>
 
 

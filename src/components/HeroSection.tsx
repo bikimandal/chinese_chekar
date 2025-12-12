@@ -33,17 +33,17 @@ export default function HeroSection() {
       <div className="absolute bottom-10 right-10 w-32 h-32 border-r-2 border-b-2 border-amber-500/30 z-10"></div>
 
       {/* Content */}
-      <div className="relative z-20 text-center px-4 max-w-5xl mx-auto py-20">
+      <div className="relative z-20 text-center px-4 sm:px-6 max-w-5xl mx-auto py-12 sm:py-16 md:py-20">
         {/* Premium Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 backdrop-blur-sm border border-amber-500/20 rounded-full mb-8">
-          <Sparkles className="w-4 h-4 text-amber-400" />
-          <span className="text-sm text-amber-200 font-medium tracking-wider">
+        <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 backdrop-blur-sm border border-amber-500/20 rounded-full mb-6 sm:mb-8">
+          <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
+          <span className="text-xs sm:text-sm text-amber-200 font-medium tracking-wider">
             AUTHENTIC CHINESE CUISINE
           </span>
         </div>
 
         {/* Main Heading */}
-        <h1 className="text-6xl md:text-8xl font-bold mb-6 leading-tight">
+        <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-4 sm:mb-6 leading-tight">
           <span className="block text-white">Experience the</span>
           <span className="block bg-gradient-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent">
             Art of Flavor
@@ -58,40 +58,42 @@ export default function HeroSection() {
         </div>
 
         {/* Subtitle */}
-        <p className="text-xl md:text-2xl text-slate-300 mb-12 font-light max-w-3xl mx-auto leading-relaxed">
+        <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-300 mb-8 sm:mb-10 md:mb-12 font-light max-w-3xl mx-auto leading-relaxed px-2">
           Where authentic flavors meet modern elegance.
-          <span className="block mt-2 text-slate-400">
+          <span className="block mt-2 text-sm sm:text-base md:text-lg lg:text-xl text-slate-400">
             Discover our live menu with exclusive daily specials.
           </span>
         </p>
 
         {/* CTA Buttons */}
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-12">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 md:mb-12 px-2">
           <Link
             href="/inventory"
-            className="group relative px-8 py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/30 flex items-center gap-2 overflow-hidden"
+            className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-full transition-all duration-300 transform hover:scale-105 hover:shadow-2xl hover:shadow-amber-500/30 flex items-center gap-2 overflow-hidden w-full sm:w-auto justify-center"
           >
             <div className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <span className="relative font-semibold text-lg">
+            <span className="relative font-semibold text-sm sm:text-base md:text-lg">
               View Live Menu
             </span>
-            <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
 
           <Link
             href="/about"
-            className="group px-8 py-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 hover:border-amber-500/50 text-white rounded-full transition-all duration-300 hover:bg-slate-800/70"
+            className="group px-6 sm:px-8 py-3 sm:py-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 hover:border-amber-500/50 text-white rounded-full transition-all duration-300 hover:bg-slate-800/70 w-full sm:w-auto text-center"
           >
-            <span className="font-semibold text-lg">Our Story</span>
+            <span className="font-semibold text-sm sm:text-base md:text-lg">
+              Our Story
+            </span>
           </Link>
         </div>
 
         {/* Features */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
-          <div className="p-6 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto px-2">
+          <div className="p-4 sm:p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
               <svg
-                className="w-6 h-6 text-amber-400"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -104,33 +106,33 @@ export default function HeroSection() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
               Fresh Daily
             </h3>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-xs sm:text-sm">
               Premium ingredients sourced daily for authentic taste
             </p>
           </div>
 
-          <div className="p-6 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+          <div className="p-4 sm:p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
               <div className="relative">
                 <div className="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></div>
                 <div className="absolute inset-0 w-2 h-2 bg-emerald-400 rounded-full animate-ping"></div>
               </div>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
               Live Updates
             </h3>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-xs sm:text-sm">
               Real-time inventory tracking for your convenience
             </p>
           </div>
 
-          <div className="p-6 bg-slate-800/30 backdrop-blur-sm rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300">
-            <div className="w-12 h-12 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-4 mx-auto">
+          <div className="p-4 sm:p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300 sm:col-span-2 md:col-span-1">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto">
               <svg
-                className="w-6 h-6 text-amber-400"
+                className="w-5 h-5 sm:w-6 sm:h-6 text-amber-400"
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -143,10 +145,10 @@ export default function HeroSection() {
                 />
               </svg>
             </div>
-            <h3 className="text-lg font-semibold text-white mb-2">
+            <h3 className="text-base sm:text-lg font-semibold text-white mb-1 sm:mb-2">
               Authentic Recipe
             </h3>
-            <p className="text-slate-400 text-sm">
+            <p className="text-slate-400 text-xs sm:text-sm">
               Traditional methods passed down through generations
             </p>
           </div>

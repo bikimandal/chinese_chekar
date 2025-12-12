@@ -37,7 +37,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, description, image } = body;
+    const { name, description, image, hasHalfFullPlate, halfPlatePrice, fullPlatePrice } = body;
 
     if (!name || !name.trim()) {
       return NextResponse.json(
@@ -52,6 +52,10 @@ export async function PUT(
         name: name.trim(),
         description: description?.trim() || null,
         image: image?.trim() || null,
+        hasHalfFullPlate: hasHalfFullPlate ?? true,
+        halfPlatePrice: hasHalfFullPlate && halfPlatePrice ? parseFloat(halfPlatePrice) : null,
+        // When toggle is off, the form sends price as fullPlatePrice, so always use fullPlatePrice if provided
+        fullPlatePrice: fullPlatePrice ? parseFloat(fullPlatePrice) : null,
       },
     });
 

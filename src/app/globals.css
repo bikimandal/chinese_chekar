@@ -118,6 +118,15 @@ h1 {
   scrollbar-color: rgba(255, 215, 0, 0.9) rgba(18, 18, 18, 0.8);
 }
 
+/* Hide scrollbar for horizontal scroll on mobile */
+.scrollbar-hide {
+  -ms-overflow-style: none; /* IE and Edge */
+  scrollbar-width: none; /* Firefox */
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none; /* Chrome, Safari and Opera */
+}
+
 /* Skeleton Loader Animation */
 @keyframes shimmer {
   0% {

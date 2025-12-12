@@ -107,22 +107,22 @@ export default function Footer() {
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-orange-500 rounded-full blur-3xl"></div>
       </div>
 
-      <div className="relative container mx-auto px-4 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+      <div className="relative container mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 md:py-16">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 sm:gap-10 md:gap-12 mb-8 sm:mb-10 md:mb-12">
           {/* Brand Section */}
-          <div className="space-y-6">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30">
-                <ChefHat className="w-6 h-6 text-white" />
+          <div className="space-y-4 sm:space-y-6">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30 flex-shrink-0">
+                <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
+                <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
                   Chinese Chekar
                 </h3>
                 <p className="text-xs text-slate-500">Premium Cuisine</p>
               </div>
             </div>
-            <p className="text-slate-400 leading-relaxed">
+            <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
               Experience authentic Chinese flavors crafted with passion and
               precision. Where tradition meets modern culinary excellence.
             </p>
@@ -211,31 +211,31 @@ export default function Footer() {
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white flex items-center gap-2">
-              <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
+            <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white flex items-center gap-2">
+              <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
               Contact Us
             </h3>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3 text-slate-400">
-                <MapPin className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+            <ul className="space-y-3 sm:space-y-4">
+              <li className="flex items-start gap-2 sm:gap-3 text-sm sm:text-base text-slate-400">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 mt-0.5 flex-shrink-0" />
                 <span>
                   123 Culinary Street, Food District, Howrah, West Bengal
                 </span>
               </li>
-              <li className="flex items-center gap-3 text-slate-400">
-                <Phone className="w-5 h-5 text-amber-500 flex-shrink-0" />
+              <li className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base text-slate-400">
+                <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" />
                 <a
                   href="tel:+911234567890"
-                  className="hover:text-amber-400 transition-colors"
+                  className="hover:text-amber-400 transition-colors break-all"
                 >
                   +91 (123) 456-7890
                 </a>
               </li>
-              <li className="flex items-center gap-3 text-slate-400">
-                <Mail className="w-5 h-5 text-amber-500 flex-shrink-0" />
+              <li className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base text-slate-400">
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" />
                 <a
                   href="mailto:info@chinesechekar.com"
-                  className="hover:text-amber-400 transition-colors"
+                  className="hover:text-amber-400 transition-colors break-all"
                 >
                   info@chinesechekar.com
                 </a>
@@ -245,21 +245,21 @@ export default function Footer() {
 
           {/* Operating Hours */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white flex items-center gap-2">
-              <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
+            <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white flex items-center gap-2">
+              <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
               Opening Hours
             </h3>
-            <div className="space-y-4">
-              <div className="flex items-start gap-3">
-                <Clock className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                <div className="text-slate-400 space-y-2">
-                  <p className="flex justify-between gap-8">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="flex items-start gap-2 sm:gap-3">
+                <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 mt-0.5 flex-shrink-0" />
+                <div className="text-sm sm:text-base text-slate-400 space-y-2 flex-1">
+                  <p className="flex flex-col sm:flex-row sm:justify-between sm:gap-4">
                     <span className="font-medium text-slate-300">
                       Monday - Friday
                     </span>
                     <span>11:00 AM - 10:00 PM</span>
                   </p>
-                  <p className="flex justify-between gap-8">
+                  <p className="flex flex-col sm:flex-row sm:justify-between sm:gap-4">
                     <span className="font-medium text-slate-300">
                       Saturday - Sunday
                     </span>
@@ -273,13 +273,13 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-slate-800/50 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <p className="text-slate-500 text-sm text-center md:text-left">
+        <div className="border-t border-slate-800/50 pt-6 sm:pt-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
+            <p className="text-slate-500 text-xs sm:text-sm text-center sm:text-left">
               &copy; {new Date().getFullYear()} Chinese Chekar. All rights
               reserved. Crafted with passion.
             </p>
-            <div className="flex gap-6 text-sm">
+            <div className="flex gap-4 sm:gap-6 text-xs sm:text-sm">
               <Link
                 href="/privacy"
                 className="text-slate-500 hover:text-amber-400 transition-colors"

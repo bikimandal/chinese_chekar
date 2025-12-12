@@ -40,7 +40,7 @@ export default function AdminHeader({ onLogout }: AdminHeaderProps) {
               <span className="sm:hidden">Sales</span>
             </Link>
             <Link
-              href="/admin/controls"
+              href="/admin/product-templates"
               className="flex items-center justify-center gap-2 px-3 sm:px-4 py-2 bg-slate-800/50 border border-slate-700 text-slate-300 hover:text-white hover:border-amber-500/50 rounded-xl transition-all duration-300 text-sm sm:text-base flex-1 sm:flex-initial"
             >
               <Package className="w-4 h-4" />

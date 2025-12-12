@@ -81,6 +81,7 @@ export async function POST(request: Request) {
           create: items.map((item: any) => ({
             itemId: item.itemId,
             itemName: item.itemName,
+            plateType: item.plateType || null,
             quantity: item.quantity,
             unitPrice: item.unitPrice,
             totalPrice: item.totalPrice,

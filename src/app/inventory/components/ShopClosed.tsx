@@ -9,7 +9,7 @@ export default function ShopClosed({ message }: ShopClosedProps) {
   const isNight = currentHour >= 18 || currentHour < 6;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4 sm:p-6 md:p-8 relative overflow-hidden">
       {/* Animated Background Elements */}
       <div className="absolute inset-0 opacity-10">
         <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-amber-500 rounded-full blur-3xl animate-pulse"></div>
@@ -51,32 +51,32 @@ export default function ShopClosed({ message }: ShopClosedProps) {
         ></div>
       </div>
 
-      <div className="max-w-2xl mx-auto text-center relative z-10">
+      <div className="max-w-2xl mx-auto text-center relative z-10 px-2">
         {/* Main Icon with Animation */}
-        <div className="mb-8 relative">
-          <div className="inline-flex items-center justify-center w-28 h-28 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-3xl mb-6 border-2 border-slate-700/50 shadow-2xl relative group">
+        <div className="mb-6 sm:mb-8 relative">
+          <div className="inline-flex items-center justify-center w-20 h-20 sm:w-24 sm:h-24 md:w-28 md:h-28 bg-gradient-to-br from-slate-800/80 to-slate-900/80 backdrop-blur-xl rounded-2xl sm:rounded-3xl mb-4 sm:mb-6 border-2 border-slate-700/50 shadow-2xl relative group">
             {/* Pulsing background glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500 animate-pulse"></div>
+            <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500 animate-pulse"></div>
 
             {/* Rotating ring */}
             <div
-              className="absolute inset-0 border-2 border-transparent border-t-amber-500/50 border-r-amber-500/50 rounded-3xl"
+              className="absolute inset-0 border-2 border-transparent border-t-amber-500/50 border-r-amber-500/50 rounded-2xl sm:rounded-3xl"
               style={{ animation: "spin 8s linear infinite" }}
             ></div>
 
             {/* Icon */}
             <Clock
-              className="w-14 h-14 text-amber-400 relative z-10"
+              className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-amber-400 relative z-10"
               style={{ animation: "pulse 3s ease-in-out infinite" }}
             />
 
             {/* Corner accents */}
-            <div className="absolute top-2 right-2 w-3 h-3 border-t-2 border-r-2 border-amber-500/30 rounded-tr-lg"></div>
-            <div className="absolute bottom-2 left-2 w-3 h-3 border-b-2 border-l-2 border-amber-500/30 rounded-bl-lg"></div>
+            <div className="absolute top-1.5 right-1.5 sm:top-2 sm:right-2 w-2 h-2 sm:w-3 sm:h-3 border-t-2 border-r-2 border-amber-500/30 rounded-tr-lg"></div>
+            <div className="absolute bottom-1.5 left-1.5 sm:bottom-2 sm:left-2 w-2 h-2 sm:w-3 sm:h-3 border-b-2 border-l-2 border-amber-500/30 rounded-bl-lg"></div>
           </div>
 
           {/* Title */}
-          <h1 className="text-5xl md:text-7xl font-bold mb-4 leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-bold mb-3 sm:mb-4 leading-tight px-2">
             <span className="text-white">We're </span>
             <span className="bg-gradient-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent">
               Closed
@@ -84,44 +84,44 @@ export default function ShopClosed({ message }: ShopClosedProps) {
           </h1>
 
           {/* Decorative line */}
-          <div className="flex items-center justify-center gap-3 mb-6">
-            <div className="h-px w-16 bg-gradient-to-r from-transparent to-amber-500"></div>
-            <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-            <div className="h-px w-16 bg-gradient-to-l from-transparent to-amber-500"></div>
+          <div className="flex items-center justify-center gap-2 sm:gap-3 mb-4 sm:mb-6">
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-r from-transparent to-amber-500"></div>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-amber-500 rounded-full animate-pulse"></div>
+            <div className="h-px w-12 sm:w-16 bg-gradient-to-l from-transparent to-amber-500"></div>
           </div>
         </div>
 
         {/* Content Card */}
-        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl p-8 md:p-10 rounded-3xl border border-slate-700/50 shadow-2xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500">
+        <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-xl p-6 sm:p-8 md:p-10 rounded-2xl sm:rounded-3xl border border-slate-700/50 shadow-2xl relative overflow-hidden group hover:border-amber-500/30 transition-all duration-500">
           {/* Subtle gradient overlay */}
           <div className="absolute inset-0 bg-gradient-to-br from-amber-500/5 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
 
           {/* Chef Hat Icon */}
-          <div className="relative inline-flex items-center justify-center mb-6">
-            <div className="absolute w-20 h-20 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-xl"></div>
-            <div className="relative w-16 h-16 bg-slate-800/50 rounded-2xl flex items-center justify-center border border-slate-700/50">
-              <ChefHat className="w-8 h-8 text-amber-400/70" />
+          <div className="relative inline-flex items-center justify-center mb-4 sm:mb-6">
+            <div className="absolute w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-500/10 to-orange-500/10 rounded-full blur-xl"></div>
+            <div className="relative w-12 h-12 sm:w-16 sm:h-16 bg-slate-800/50 rounded-xl sm:rounded-2xl flex items-center justify-center border border-slate-700/50">
+              <ChefHat className="w-6 h-6 sm:w-8 sm:h-8 text-amber-400/70" />
             </div>
           </div>
 
           {/* Message */}
-          <p className="text-xl md:text-2xl text-slate-200 mb-6 leading-relaxed relative z-10">
+          <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-200 mb-4 sm:mb-6 leading-relaxed relative z-10 px-2">
             {message ||
               "We are currently closed. Please check back during our business hours!"}
           </p>
 
           {/* Operating Hours Preview */}
-          <div className="inline-flex items-center gap-3 px-6 py-3 bg-slate-900/50 rounded-xl border border-slate-700/50 mb-6">
+          <div className="inline-flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 bg-slate-900/50 rounded-lg sm:rounded-xl border border-slate-700/50 mb-4 sm:mb-6">
             {isNight ? (
-              <Moon className="w-5 h-5 text-blue-400" />
+              <Moon className="w-4 h-4 sm:w-5 sm:h-5 text-blue-400 flex-shrink-0" />
             ) : (
-              <Sun className="w-5 h-5 text-amber-400" />
+              <Sun className="w-4 h-4 sm:w-5 sm:h-5 text-amber-400 flex-shrink-0" />
             )}
             <div className="text-left">
               <p className="text-xs text-slate-400 uppercase tracking-wide">
                 Business Hours
               </p>
-              <p className="text-sm font-semibold text-slate-200">
+              <p className="text-xs sm:text-sm font-semibold text-slate-200">
                 Mon-Fri: 11 AM - 10 PM
               </p>
             </div>

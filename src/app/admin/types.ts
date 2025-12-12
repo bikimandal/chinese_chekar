@@ -12,6 +12,9 @@ export interface Item {
   product: {
     id: string;
     name: string;
+    hasHalfFullPlate?: boolean;
+    halfPlatePrice?: number | null;
+    fullPlatePrice?: number | null;
   } | null;
   isAvailable: boolean;
   isVisible: boolean;
