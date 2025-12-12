@@ -11,6 +11,8 @@ import {
   Facebook,
   Instagram,
   Twitter,
+  Youtube,
+  Linkedin,
 } from "lucide-react";
 import { footerConfig } from "@/config/footer";
 
@@ -18,6 +20,8 @@ const iconMap = {
   facebook: Facebook,
   instagram: Instagram,
   twitter: Twitter,
+  youtube: Youtube,
+  linkedin: Linkedin,
 };
 
 interface StoreStatus {
