@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Lock, Mail } from "lucide-react";
+import { Lock, Mail, Loader2 } from "lucide-react";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
@@ -98,9 +98,16 @@ export default function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/30 text-sm sm:text-base"
+          className="w-full py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/30 text-sm sm:text-base flex items-center justify-center gap-2"
         >
-          {loading ? "Authenticating..." : "Access Dashboard"}
+          {loading ? (
+            <>
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+              <span>Logging in...</span>
+            </>
+          ) : (
+            "Login"
+          )}
         </button>
       </form>
     </div>
