@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import jsPDF from "jspdf";
+import { footerConfig } from "@/config/footer";
 
 interface Sale {
   id: string;
@@ -49,19 +50,19 @@ export default function InvoicePDF({ sale, autoPrint = false }: InvoicePDFProps)
     // Restaurant Name
     pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
-    pdf.text("CHINESE CHEKAR", pageWidth / 2, yPos, { align: "center" });
+    pdf.text(footerConfig.brand.name.toUpperCase(), pageWidth / 2, yPos, { align: "center" });
     yPos += 6;
 
     // Address
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
-    pdf.text("123 Culinary Street, Food District", pageWidth / 2, yPos, {
-      align: "center",
+    const addressLines = pdf.splitTextToSize(footerConfig.contact.address, pageWidth - margin * 2);
+    addressLines.forEach((line: string) => {
+      pdf.text(line, pageWidth / 2, yPos, { align: "center" });
+      yPos += 4;
     });
-    yPos += 4;
-    pdf.text("Howrah, West Bengal", pageWidth / 2, yPos, { align: "center" });
-    yPos += 4;
-    pdf.text("Phone: +91 (123) 456-7890", pageWidth / 2, yPos, {
+    yPos += 2;
+    pdf.text(`Phone: ${footerConfig.contact.phone}`, pageWidth / 2, yPos, {
       align: "center",
     });
     yPos += 6;
@@ -189,16 +190,13 @@ export default function InvoicePDF({ sale, autoPrint = false }: InvoicePDFProps)
         {/* Restaurant Header */}
         <div className="text-center mb-4 print:mb-3">
           <h1 className="text-lg sm:text-xl font-bold mb-1 print:text-base">
-            CHINESE CHEKAR
+            {footerConfig.brand.name.toUpperCase()}
           </h1>
           <p className="text-xs print:text-[10px] text-gray-600">
-            123 Culinary Street, Food District
+            {footerConfig.contact.address}
           </p>
           <p className="text-xs print:text-[10px] text-gray-600">
-            Howrah, West Bengal
-          </p>
-          <p className="text-xs print:text-[10px] text-gray-600">
-            Phone: +91 (123) 456-7890
+            Phone: {footerConfig.contact.phone}
           </p>
         </div>
 

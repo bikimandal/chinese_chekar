@@ -12,6 +12,13 @@ import {
   Instagram,
   Twitter,
 } from "lucide-react";
+import { footerConfig } from "@/config/footer";
+
+const iconMap = {
+  facebook: Facebook,
+  instagram: Instagram,
+  twitter: Twitter,
+};
 
 interface StoreStatus {
   id: string;
@@ -116,128 +123,92 @@ export default function Footer() {
                 <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
               </div>
               <div>
-                <h3 className="text-lg sm:text-xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
-                  Chinese Chekar
+                <h3
+                  className="text-lg sm:text-xl md:text-2xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent tracking-wide"
+                  style={{ fontFamily: 'var(--font-branding), cursive' }}
+                >
+                  {footerConfig.brand.name}
                 </h3>
-                <p className="text-xs text-slate-500">Premium Cuisine</p>
+                <p className="text-xs text-slate-500">{footerConfig.brand.tagline}</p>
               </div>
             </div>
             <p className="text-sm sm:text-base text-slate-400 leading-relaxed">
-              Experience authentic Chinese flavors crafted with passion and
-              precision. Where tradition meets modern culinary excellence.
+              {footerConfig.brand.description}
             </p>
             <div className="flex gap-3">
-              <a
-                href="https://facebook.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800/50 hover:bg-amber-600 border border-slate-700 hover:border-amber-500 rounded-lg flex items-center justify-center transition-all duration-300 group"
-              >
-                <Facebook className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
-              </a>
-              <a
-                href="https://instagram.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800/50 hover:bg-amber-600 border border-slate-700 hover:border-amber-500 rounded-lg flex items-center justify-center transition-all duration-300 group"
-              >
-                <Instagram className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
-              </a>
-              <a
-                href="https://twitter.com"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="w-10 h-10 bg-slate-800/50 hover:bg-amber-600 border border-slate-700 hover:border-amber-500 rounded-lg flex items-center justify-center transition-all duration-300 group"
-              >
-                <Twitter className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
-              </a>
+              {footerConfig.socialLinks.map((social) => {
+                const IconComponent = iconMap[social.icon];
+                if (!IconComponent) return null;
+                return (
+                  <a
+                    key={social.name}
+                    href={social.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-10 h-10 bg-slate-800/50 hover:bg-amber-600 border border-slate-700 hover:border-amber-500 rounded-lg flex items-center justify-center transition-all duration-300 group"
+                    aria-label={social.name}
+                  >
+                    <IconComponent className="w-5 h-5 text-slate-400 group-hover:text-white transition-colors" />
+                  </a>
+                );
+              })}
             </div>
           </div>
 
           {/* Quick Links */}
           <div>
-            <h3 className="text-lg font-semibold mb-6 text-white flex items-center gap-2">
+            <h3
+              className="text-lg font-semibold mb-6 text-white flex items-center gap-2 font-sans"
+              style={{ fontFamily: 'var(--font-body), sans-serif' }}
+            >
               <div className="w-1 h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
               Quick Links
             </h3>
             <ul className="space-y-3">
-              <li>
-                <Link
-                  href="/"
-                  className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-2 group"
-                >
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                  Home
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/menu"
-                  className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-2 group"
-                >
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                  Menu
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/about"
-                  className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-2 group"
-                >
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                  About Us
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/contact"
-                  className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-2 group"
-                >
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                  Contact
-                </Link>
-              </li>
-              <li>
-                <Link
-                  href="/admin"
-                  className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-2 group"
-                >
-                  <span className="w-1.5 h-1.5 bg-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
-                  Admin
-                </Link>
-              </li>
+              {footerConfig.quickLinks.map((link) => (
+                <li key={link.href}>
+                  <Link
+                    href={link.href}
+                    className="text-slate-400 hover:text-amber-400 transition-colors flex items-center gap-2 group"
+                  >
+                    <span className="w-1.5 h-1.5 bg-amber-500 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"></span>
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
             </ul>
           </div>
 
           {/* Contact Info */}
           <div>
-            <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white flex items-center gap-2">
+            <h3
+              className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white flex items-center gap-2 font-sans"
+              style={{ fontFamily: 'var(--font-body), sans-serif' }}
+            >
               <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
               Contact Us
             </h3>
             <ul className="space-y-3 sm:space-y-4">
               <li className="flex items-start gap-2 sm:gap-3 text-sm sm:text-base text-slate-400">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 mt-0.5 flex-shrink-0" />
-                <span>
-                  123 Culinary Street, Food District, Howrah, West Bengal
-                </span>
+                <span>{footerConfig.contact.address}</span>
               </li>
               <li className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base text-slate-400">
                 <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" />
                 <a
-                  href="tel:+911234567890"
+                  href={`tel:${footerConfig.contact.phone.replace(/\s/g, "")}`}
                   className="hover:text-amber-400 transition-colors break-all"
                 >
-                  +91 (123) 456-7890
+                  {footerConfig.contact.phone}
                 </a>
               </li>
               <li className="flex items-center gap-2 sm:gap-3 text-sm sm:text-base text-slate-400">
                 <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 flex-shrink-0" />
                 <a
-                  href="mailto:info@chinesechekar.com"
+                  href={`mailto:${footerConfig.contact.email}`}
                   className="hover:text-amber-400 transition-colors break-all"
                 >
-                  info@chinesechekar.com
+                  {footerConfig.contact.email}
                 </a>
               </li>
             </ul>
@@ -245,7 +216,10 @@ export default function Footer() {
 
           {/* Operating Hours */}
           <div>
-            <h3 className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white flex items-center gap-2">
+            <h3
+              className="text-base sm:text-lg font-semibold mb-4 sm:mb-6 text-white flex items-center gap-2 font-sans"
+              style={{ fontFamily: 'var(--font-body), sans-serif' }}
+            >
               <div className="w-1 h-5 sm:h-6 bg-gradient-to-b from-amber-500 to-orange-500 rounded-full"></div>
               Opening Hours
             </h3>
@@ -253,18 +227,17 @@ export default function Footer() {
               <div className="flex items-start gap-2 sm:gap-3">
                 <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-500 mt-0.5 flex-shrink-0" />
                 <div className="text-sm sm:text-base text-slate-400 space-y-2 flex-1">
-                  <p className="flex flex-col sm:flex-row sm:justify-between sm:gap-4">
-                    <span className="font-medium text-slate-300">
-                      Monday - Friday
-                    </span>
-                    <span>11:00 AM - 10:00 PM</span>
-                  </p>
-                  <p className="flex flex-col sm:flex-row sm:justify-between sm:gap-4">
-                    <span className="font-medium text-slate-300">
-                      Saturday - Sunday
-                    </span>
-                    <span>11:00 AM - 11:00 PM</span>
-                  </p>
+                  {footerConfig.workingHours.map((schedule, index) => (
+                    <p
+                      key={index}
+                      className="flex flex-col sm:flex-row sm:justify-between sm:gap-4"
+                    >
+                      <span className="font-medium text-slate-300">
+                        {schedule.day}
+                      </span>
+                      <span>{schedule.hours}</span>
+                    </p>
+                  ))}
                 </div>
               </div>
               <StoreStatusIndicator />
@@ -274,10 +247,13 @@ export default function Footer() {
 
         {/* Bottom Bar */}
         <div className="border-t border-slate-800/50 pt-6 sm:pt-8">
-          <div className="flex flex-col sm:flex-row justify-between items-center gap-3 sm:gap-4">
-            <p className="text-slate-500 text-xs sm:text-sm text-center sm:text-left">
-              &copy; {new Date().getFullYear()} Chinese Chekar. All rights
-              reserved. Crafted with passion.
+          <div className="flex flex-col items-center gap-3 sm:gap-4">
+            <p className="text-slate-500 text-xs sm:text-sm text-center">
+              {footerConfig.footerText}
+            </p>
+            <p className="text-slate-400 text-xs sm:text-sm text-center">
+              {footerConfig.madeWith.text} in {footerConfig.madeWith.location}{" "}
+              <span className="text-red-400">❤️</span>
             </p>
             <div className="flex gap-4 sm:gap-6 text-xs sm:text-sm">
               <Link

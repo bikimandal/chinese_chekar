@@ -5,6 +5,7 @@ import Link from "next/link";
 import { ArrowLeft, Plus, Edit2, Trash2 } from "lucide-react";
 import Loader from "@/components/Loader";
 import BackButton from "../components/BackButton";
+import ProductTemplatesSkeleton from "@/components/skeletons/ProductTemplatesSkeleton";
 
 interface Product {
   id: string;
@@ -19,6 +20,7 @@ export default function AdminControlsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoadingProducts, setIsLoadingProducts] = useState(false);
 
   useEffect(() => {
     checkSession();
@@ -54,6 +56,7 @@ export default function AdminControlsPage() {
   };
 
   const fetchProducts = async () => {
+    setIsLoadingProducts(true);
     try {
       const response = await fetch("/api/products");
       
@@ -75,6 +78,8 @@ export default function AdminControlsPage() {
     } catch (error) {
       console.error("Error fetching products:", error);
       setProducts([]);
+    } finally {
+      setIsLoadingProducts(false);
     }
   };
 
@@ -147,7 +152,9 @@ export default function AdminControlsPage() {
             </p>
           </div>
 
-          {products.length === 0 ? (
+          {isLoadingProducts ? (
+            <ProductTemplatesSkeleton />
+          ) : products.length === 0 ? (
             <div className="p-8 sm:p-12 text-center">
               <p className="text-slate-400 mb-4 text-sm sm:text-base">No products found</p>
               <Link

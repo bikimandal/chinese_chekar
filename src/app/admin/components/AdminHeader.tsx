@@ -45,7 +45,7 @@ export default function AdminHeader({ onLogout }: AdminHeaderProps) {
             >
               <Package className="w-4 h-4" />
               <span className="hidden sm:inline">Product Templates</span>
-              <span className="sm:hidden">Templates</span>
+              <span className="sm:hidden">Products</span>
             </Link>
             <button
               onClick={onLogout}
@@ -61,4 +61,3 @@ export default function AdminHeader({ onLogout }: AdminHeaderProps) {
     </div>
   );
 }
-

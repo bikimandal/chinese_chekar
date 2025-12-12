@@ -79,11 +79,17 @@ export default function ItemCard({
   const status = getStockStatus();
   const StatusIcon = status.icon;
 
+  // Determine if item is disabled or out of stock
+  const isDisabled = !isAvailable;
+  const isOutOfStock = isAvailable && stock === 0;
+
   return (
     <div
-      className={`group relative bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-500 flex flex-row sm:flex-col ${
-        !isAvailable
+      className={`group relative bg-gradient-to-b from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl overflow-hidden border transition-all duration-500 flex flex-row sm:flex-col h-full ${
+        isDisabled
           ? "border-slate-700/30 opacity-60 grayscale hover:border-slate-600/50"
+          : isOutOfStock
+          ? "border-slate-700/30 opacity-70 sepia hover:border-slate-600/50"
           : "border-slate-700/50 hover:border-amber-500/50 hover:shadow-xl sm:hover:shadow-2xl hover:shadow-amber-500/20 hover:-translate-y-1 sm:hover:-translate-y-2"
       }`}
     >
@@ -100,9 +106,11 @@ export default function ItemCard({
               fill
               loading="eager"
               className={`object-cover transition-all duration-700 ${
-                isAvailable
-                  ? "group-hover:scale-110 group-hover:rotate-1"
-                  : "opacity-50"
+                isDisabled
+                  ? "opacity-50"
+                  : isOutOfStock
+                  ? "opacity-60"
+                  : "group-hover:scale-110 group-hover:rotate-1"
               }`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             />
@@ -133,10 +141,10 @@ export default function ItemCard({
         <div className="absolute top-0 right-0 w-20 h-20 sm:w-24 sm:h-24 overflow-hidden z-10">
           <div
             className={`absolute w-28 sm:w-32 h-5 sm:h-6 flex items-center justify-center shadow-lg ${
-              !isAvailable
+              isDisabled
                 ? "bg-gradient-to-r from-gray-600 to-gray-700"
-                : stock === 0
-                ? "bg-gradient-to-r from-red-600 to-red-700"
+                : isOutOfStock
+                ? "bg-gradient-to-r from-purple-600 to-indigo-700"
                 : stock <= 5
                 ? "bg-gradient-to-r from-amber-500 to-orange-500"
                 : "bg-gradient-to-r from-emerald-500 to-green-500"
@@ -149,9 +157,9 @@ export default function ItemCard({
             }}
           >
             <span className="text-[9px] sm:text-[10px] font-bold text-white uppercase tracking-wider whitespace-nowrap drop-shadow-md">
-              {!isAvailable
+              {isDisabled
                 ? "Not Available"
-                : stock === 0
+                : isOutOfStock
                 ? "Sold Out"
                 : stock <= 5
                 ? "Limited"
@@ -169,16 +177,19 @@ export default function ItemCard({
       </div>
 
       {/* Content */}
-      <div className="flex-1 p-2.5 sm:p-3 md:p-4 lg:p-5 space-y-1.5 sm:space-y-2 md:space-y-2.5 flex flex-col">
+      <div className="flex-1 p-2.5 sm:p-3 md:p-4 lg:p-5 flex flex-col min-h-0">
         {/* Title and Price */}
-        <div className="flex justify-between items-start gap-2">
+        <div className="flex justify-between items-start gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
           <div className="flex-1 min-w-0 pr-2">
             <h3
-              className={`text-sm sm:text-base md:text-lg lg:text-xl font-bold transition-all duration-300 ${
-                isAvailable
-                  ? "text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-amber-200 group-hover:to-orange-200 group-hover:bg-clip-text"
-                  : "text-slate-500"
+              className={`text-sm sm:text-base md:text-lg lg:text-xl font-semibold transition-all duration-300 font-sans ${
+                isDisabled
+                  ? "text-slate-500"
+                  : isOutOfStock
+                  ? "text-purple-300"
+                  : "text-white group-hover:text-transparent group-hover:bg-gradient-to-r group-hover:from-amber-200 group-hover:to-orange-200 group-hover:bg-clip-text"
               }`}
+              style={{ fontFamily: 'var(--font-body), sans-serif' }}
             >
               {name}
             </h3>
@@ -190,9 +201,11 @@ export default function ItemCard({
           <div className="flex flex-col items-end shrink-0">
             <span
               className={`text-base sm:text-lg md:text-xl lg:text-2xl font-bold ${
-                isAvailable
-                  ? "bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent"
-                  : "text-slate-600"
+                isDisabled
+                  ? "text-slate-600"
+                  : isOutOfStock
+                  ? "bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent"
+                  : "bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent"
               }`}
             >
               ₹{displayPrice}
@@ -200,87 +213,120 @@ export default function ItemCard({
             <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500">
               {hasHalfFull ? "half plate" : "per serving"}
             </span>
-            {hasHalfFull && fullPlatePrice && (
-              <div className="mt-1.5 sm:mt-2 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-md">
+            {/* Always reserve space for full plate price, show placeholder if not available */}
+            <div
+              className={`mt-1.5 sm:mt-2 px-2 py-1 rounded-md ${
+                hasHalfFull && fullPlatePrice
+                  ? isDisabled
+                    ? "bg-slate-700/20 border border-slate-600/20"
+                    : isOutOfStock
+                    ? "bg-purple-500/10 border border-purple-500/20"
+                    : "bg-amber-500/10 border border-amber-500/20"
+                  : "invisible"
+              }`}
+              style={{ minHeight: hasHalfFull && fullPlatePrice ? 'auto' : '28px' }}
+            >
+              {hasHalfFull && fullPlatePrice && (
                 <span
                   className={`text-[10px] sm:text-xs font-semibold ${
-                    isAvailable
-                      ? "bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent"
-                      : "text-slate-600"
+                    isDisabled
+                      ? "text-slate-600"
+                      : isOutOfStock
+                      ? "bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent"
+                      : "bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent"
                   }`}
                 >
                   Full plate: Rs {fullPlatePrice}
                 </span>
-              </div>
-            )}
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Description - Shown on all screen sizes */}
-        {description && (
-          <p
-            className={`text-xs sm:text-sm leading-relaxed ${
-              isAvailable ? "text-slate-400" : "text-slate-600"
-            }`}
-          >
-            {description}
-          </p>
-        )}
+        {/* Description - Shown on all screen sizes, with consistent min-height */}
+        <div className="mb-1.5 sm:mb-2 md:mb-2.5 min-h-[3rem] sm:min-h-[3.5rem] md:min-h-[4rem]">
+          {description ? (
+            <p
+              className={`text-xs sm:text-sm leading-relaxed line-clamp-3 ${
+                isDisabled
+                  ? "text-slate-600"
+                  : isOutOfStock
+                  ? "text-purple-300/70"
+                  : "text-slate-400"
+              }`}
+            >
+              {description}
+            </p>
+          ) : (
+            <div className="h-full"></div>
+          )}
+        </div>
 
-        {/* Stock Information */}
-        {isAvailable && (
-          <div className="pt-1.5 sm:pt-2 md:pt-2.5 border-t border-slate-700/50 mt-auto">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
+        {/* Stock Information - Always show section, content varies */}
+        <div className="pt-1.5 sm:pt-2 md:pt-2.5 border-t border-slate-700/50 mt-auto">
+          {isAvailable ? (
+            <>
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                  <div
+                    className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r ${
+                      status.color
+                    } ${stock > 0 ? "animate-pulse" : ""}`}
+                  ></div>
+                  <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 font-medium">
+                    Stock
+                  </span>
+                </div>
+                <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
+                  <span
+                    className={`text-xs sm:text-sm font-bold ${
+                      stock > 5
+                        ? "text-white"
+                        : stock > 0
+                        ? "text-amber-400"
+                        : "text-red-400"
+                    }`}
+                  >
+                    {stock}
+                  </span>
+                  <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500">
+                    units
+                  </span>
+                </div>
+              </div>
+
+              {/* Stock Progress Bar */}
+              <div className="mt-1.5 sm:mt-2 md:mt-3 h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
                 <div
-                  className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r ${
-                    status.color
-                  } ${stock > 0 ? "animate-pulse" : ""}`}
-                ></div>
-                <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 font-medium">
-                  Stock
-                </span>
-              </div>
-              <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
-                <span
-                  className={`text-xs sm:text-sm font-bold ${
-                    stock > 5
-                      ? "text-white"
-                      : stock > 0
-                      ? "text-amber-400"
-                      : "text-red-400"
-                  }`}
+                  className={`h-full bg-gradient-to-r ${status.color} transition-all duration-500 rounded-full`}
+                  style={{ width: `${Math.min((stock / 20) * 100, 100)}%` }}
                 >
-                  {stock}
-                </span>
-                <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500">
-                  units
-                </span>
+                  <div className="h-full w-full bg-white/20 animate-pulse"></div>
+                </div>
               </div>
-            </div>
-
-            {/* Stock Progress Bar */}
-            <div className="mt-1.5 sm:mt-2 md:mt-3 h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
-              <div
-                className={`h-full bg-gradient-to-r ${status.color} transition-all duration-500 rounded-full`}
-                style={{ width: `${Math.min((stock / 20) * 100, 100)}%` }}
-              >
-                <div className="h-full w-full bg-white/20 animate-pulse"></div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Action Hint */}
-        {isAvailable && stock > 0 && (
-          <div className="pt-1.5 sm:pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 hidden sm:block">
-            <div className="text-center py-2 px-4 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-lg">
-              <span className="text-xs text-amber-300 font-medium">
-                Available for order
+            </>
+          ) : (
+            <div className="flex items-center gap-2">
+              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-slate-600"></div>
+              <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 font-medium">
+                {isDisabled ? "Not Available" : "Out of Stock"}
               </span>
             </div>
-          </div>
-        )}
+          )}
+        </div>
+
+        {/* Action Hint - Always reserve space */}
+        <div className="pt-1.5 sm:pt-2 mt-2 hidden sm:block" style={{ minHeight: '40px' }}>
+          {isAvailable && stock > 0 && (
+            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+              <div className="text-center py-2 px-4 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-lg">
+                <span className="text-xs text-amber-300 font-medium">
+                  Available for order
+                </span>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Hover glow effect */}
