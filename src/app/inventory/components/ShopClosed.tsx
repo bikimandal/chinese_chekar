@@ -58,12 +58,6 @@ export default function ShopClosed({ message }: ShopClosedProps) {
             {/* Pulsing background glow */}
             <div className="absolute inset-0 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-2xl sm:rounded-3xl blur-xl opacity-50 group-hover:opacity-75 transition-opacity duration-500 animate-pulse"></div>
 
-            {/* Rotating ring */}
-            <div
-              className="absolute inset-0 border-2 border-transparent border-t-amber-500/50 border-r-amber-500/50 rounded-2xl sm:rounded-3xl"
-              style={{ animation: "spin 8s linear infinite" }}
-            ></div>
-
             {/* Icon */}
             <Clock
               className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 text-amber-400 relative z-10"
