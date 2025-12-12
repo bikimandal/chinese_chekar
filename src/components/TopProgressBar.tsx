@@ -160,7 +160,7 @@ export default function TopProgressBar() {
   if (!isVisible) return null;
 
   return (
-    <div className="fixed top-20 left-0 right-0 z-50 h-0.5 bg-transparent pointer-events-none">
+    <div className="fixed top-16 sm:top-20 left-0 right-0 z-50 h-0.5 bg-transparent pointer-events-none">
       <div
         className="h-full bg-gradient-to-r from-amber-500 via-orange-500 to-amber-500 transition-all duration-200 ease-out"
         style={{
