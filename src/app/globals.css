@@ -139,6 +139,22 @@ h1 {
 
 .animate-shimmer {
   animation: shimmer 2s infinite;
+  background-size: 200% 100%;
+}
+
+/* Enhanced shimmer for image skeletons */
+@keyframes shimmer-slow {
+  0% {
+    background-position: -300% 0;
+  }
+  100% {
+    background-position: 300% 0;
+  }
+}
+
+.animate-shimmer-slow {
+  animation: shimmer-slow 3s infinite;
+  background-size: 300% 100%;
 }
 
 /* Print Styles */

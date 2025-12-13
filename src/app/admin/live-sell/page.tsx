@@ -2,7 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Package, Plus, Minus, ShoppingCart, Trash2, ChevronUp, ChevronDown } from "lucide-react";
+import {
+  Package,
+  Plus,
+  Minus,
+  ShoppingCart,
+  Trash2,
+  ChevronUp,
+} from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "@/components/Loader";
@@ -16,7 +23,7 @@ interface CartItem {
   price: number;
   quantity: number;
   stock: number;
-  plateType?: "half" | "full" | null; // "half" or "full" or null if product doesn't have half/full option
+  plateType?: "half" | "full" | null;
 }
 
 export default function LiveSellPage() {
@@ -27,18 +34,18 @@ export default function LiveSellPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [showCartDetails, setShowCartDetails] = useState(false);
-  // Track plate type selection for each item (itemId -> "half" | "full")
-  const [plateSelections, setPlateSelections] = useState<Record<string, "half" | "full">>({});
+  const [plateSelections, setPlateSelections] = useState<
+    Record<string, "half" | "full">
+  >({});
 
   useEffect(() => {
     checkSession();
-    
-    // Listen for sale completion to refresh items
+
     const handleSaleCompleted = () => {
       fetchItems();
     };
     window.addEventListener("saleCompleted", handleSaleCompleted);
-    
+
     return () => {
       window.removeEventListener("saleCompleted", handleSaleCompleted);
     };
@@ -85,9 +92,10 @@ export default function LiveSellPage() {
 
       const data = await response.json();
       if (Array.isArray(data)) {
-        const enabledItems = data.filter((item: Item) => item.isAvailable === true);
+        const enabledItems = data.filter(
+          (item: Item) => item.isAvailable === true
+        );
         setItems(enabledItems);
-        // Initialize plate selections to "half" for items with half/full option
         const initialSelections: Record<string, "half" | "full"> = {};
         enabledItems.forEach((item: Item) => {
           if (item.product?.hasHalfFullPlate) {
@@ -106,7 +114,10 @@ export default function LiveSellPage() {
     }
   };
 
-  const getItemPrice = (item: Item, plateType?: "half" | "full" | null): number => {
+  const getItemPrice = (
+    item: Item,
+    plateType?: "half" | "full" | null
+  ): number => {
     if (!item.product?.hasHalfFullPlate || !plateType) {
       return item.price;
     }
@@ -121,20 +132,17 @@ export default function LiveSellPage() {
 
   const addToCart = (item: Item) => {
     const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
-    const plateType = hasHalfFull ? (plateSelections[item.id] || "half") : null;
+    const plateType = hasHalfFull ? plateSelections[item.id] || "half" : null;
     const price = getItemPrice(item, plateType);
-    
-    // For items with half/full, we need to check if same item with same plate type exists
-    const cartKey = hasHalfFull ? `${item.id}-${plateType}` : item.id;
+
     const existingItem = cart.find((ci) => {
       if (hasHalfFull) {
         return ci.itemId === item.id && ci.plateType === plateType;
       }
       return ci.itemId === item.id;
     });
-    
+
     if (existingItem) {
-      // Increase quantity if stock allows
       if (existingItem.quantity < item.stock) {
         setCart(
           cart.map((ci) =>
@@ -145,7 +153,6 @@ export default function LiveSellPage() {
         );
       }
     } else {
-      // Add new item to cart
       if (item.stock > 0) {
         setCart([
           ...cart,
@@ -164,51 +171,63 @@ export default function LiveSellPage() {
 
   const togglePlateType = (itemId: string, currentType: "half" | "full") => {
     const newType = currentType === "half" ? "full" : "half";
-    // Only update the selection for adding new items, don't modify existing cart items
     setPlateSelections((prev) => ({ ...prev, [itemId]: newType }));
   };
 
-  const removeFromCart = (itemId: string, plateType?: "half" | "full" | null) => {
+  const removeFromCart = (
+    itemId: string,
+    plateType?: "half" | "full" | null
+  ) => {
     if (plateType !== undefined) {
-      // Remove specific item with specific plate type
-      setCart(cart.filter((ci) => !(ci.itemId === itemId && ci.plateType === plateType)));
+      setCart(
+        cart.filter(
+          (ci) => !(ci.itemId === itemId && ci.plateType === plateType)
+        )
+      );
     } else {
-      // Remove all instances of this item
       setCart(cart.filter((ci) => ci.itemId !== itemId));
     }
   };
 
-  const updateQuantity = (itemId: string, change: number, plateType?: "half" | "full" | null) => {
+  const updateQuantity = (
+    itemId: string,
+    change: number,
+    plateType?: "half" | "full" | null
+  ) => {
     setCart((prevCart) => {
-      // First, calculate total quantity across all plate types for this item
-      const allCartItemsForProduct = prevCart.filter((c) => c.itemId === itemId);
-      const totalQuantity = allCartItemsForProduct.reduce((sum, c) => sum + c.quantity, 0);
-      
-      // Get the item to check stock
+      const allCartItemsForProduct = prevCart.filter(
+        (c) => c.itemId === itemId
+      );
+      const totalQuantity = allCartItemsForProduct.reduce(
+        (sum, c) => sum + c.quantity,
+        0
+      );
+
       const item = items.find((i) => i.id === itemId);
       const maxQuantity = item ? item.stock : 0;
-      
-      // Check if total quantity (including change) exceeds stock
+
       const newTotalQuantity = totalQuantity + change;
       if (newTotalQuantity > maxQuantity) {
-        return prevCart; // Don't allow more than stock
+        return prevCart;
       }
-      
-      // Update the specific cart item matching itemId and plateType
-      return prevCart.map((ci) => {
-        const matches = ci.itemId === itemId && (plateType !== undefined ? ci.plateType === plateType : true);
-        if (matches) {
-          const newQuantity = ci.quantity + change;
-          
-          if (newQuantity <= 0) {
-            // Remove this cart item if quantity becomes 0
-            return null;
+
+      return prevCart
+        .map((ci) => {
+          const matches =
+            ci.itemId === itemId &&
+            (plateType !== undefined ? ci.plateType === plateType : true);
+          if (matches) {
+            const newQuantity = ci.quantity + change;
+
+            if (newQuantity <= 0) {
+              return null;
+            }
+
+            return { ...ci, quantity: newQuantity };
           }
-          
-          return { ...ci, quantity: newQuantity };
-        }
-        return ci;
-      }).filter((ci) => ci !== null) as CartItem[];
+          return ci;
+        })
+        .filter((ci) => ci !== null) as CartItem[];
     });
   };
 
@@ -222,10 +241,8 @@ export default function LiveSellPage() {
       return;
     }
 
-    // Trigger progress bar
-    window.dispatchEvent(new Event('navigation-start'));
+    window.dispatchEvent(new Event("navigation-start"));
 
-    // Store cart in sessionStorage and navigate to checkout
     sessionStorage.setItem("checkoutCart", JSON.stringify(cart));
     router.push("/admin/live-sell/checkout");
   };
@@ -243,315 +260,337 @@ export default function LiveSellPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-24">
-      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
-        {/* Header */}
-        <div className="mb-4 sm:mb-6">
-          <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-emerald-500/20 to-green-600/20 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                <Package className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-emerald-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-200 to-green-200 bg-clip-text text-transparent truncate">
-                  Live Sell
-                </h1>
-                <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                  Add items to cart and proceed to checkout
-                </p>
-              </div>
+      <div className="container mx-auto px-4 py-4 max-w-6xl">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500/20 to-green-600/20 rounded-xl flex items-center justify-center">
+              <Package className="w-5 h-5 text-emerald-400" />
             </div>
-            <BackButton href="/admin" />
+            <div>
+              <h1
+                className="text-2xl font-bold text-white"
+                style={{ fontFamily: "var(--font-body), sans-serif" }}
+              >
+                Live Sell
+              </h1>
+              <p className="text-xs text-slate-400">Quick checkout</p>
+            </div>
           </div>
+          <BackButton href="/admin" />
         </div>
 
-        {/* Items List - Mobile Row Layout */}
+        {/* Items Grid - Better Desktop Layout */}
         {isLoadingItems ? (
           <LiveSellItemsSkeleton />
         ) : enabledItems.length === 0 ? (
-          <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-slate-700/50 p-6 sm:p-8 text-center">
-            <p className="text-slate-400 mb-4 text-xs sm:text-sm">
-              No enabled items available
-            </p>
+          <div className="bg-slate-800/50 rounded-xl border border-slate-700/50 p-8 text-center">
+            <p className="text-slate-400 mb-4">No items available</p>
             <Link
               href="/admin"
-              className="inline-block px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 text-xs sm:text-sm"
+              className="inline-block px-5 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all"
             >
-              Go to Admin Dashboard
+              Go to Dashboard
             </Link>
           </div>
         ) : (
-          <div className="space-y-2 sm:space-y-3">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {enabledItems.map((item) => {
               const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
-              const currentPlateType = plateSelections[item.id] || (hasHalfFull ? "half" : null);
+              const currentPlateType =
+                plateSelections[item.id] || (hasHalfFull ? "half" : null);
               const displayPrice = getItemPrice(item, currentPlateType);
-              // Find cart items for this item with the current plate type
-              const cartItem = cart.find((ci) => 
-                ci.itemId === item.id && 
-                (hasHalfFull ? ci.plateType === currentPlateType : !ci.plateType)
+              const cartItem = cart.find(
+                (ci) =>
+                  ci.itemId === item.id &&
+                  (hasHalfFull
+                    ? ci.plateType === currentPlateType
+                    : !ci.plateType)
               );
               const quantity = cartItem?.quantity || 0;
-              // Get all cart items for this product to show total in cart
-              const allCartItemsForProduct = cart.filter((ci) => ci.itemId === item.id);
-              const totalInCart = allCartItemsForProduct.reduce((sum, ci) => sum + ci.quantity, 0);
+              const allCartItemsForProduct = cart.filter(
+                (ci) => ci.itemId === item.id
+              );
+              const totalInCart = allCartItemsForProduct.reduce(
+                (sum, ci) => sum + ci.quantity,
+                0
+              );
               const isOutOfStock = item.stock === 0;
 
               return (
-                <div
+                <motion.div
                   key={item.id}
-                  className={`bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg border p-3 sm:p-4 transition-all duration-300 ${
+                  layout
+                  className={`group relative bg-slate-800/40 backdrop-blur rounded-xl border transition-all ${
                     isOutOfStock
-                      ? "border-slate-600/30 opacity-50 grayscale cursor-not-allowed"
-                      : "border-slate-700/50 hover:border-emerald-500/50"
+                      ? "border-slate-700/30 opacity-60"
+                      : "border-slate-700/50 hover:border-emerald-500/40 hover:shadow-lg hover:shadow-emerald-500/10"
                   }`}
                 >
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
-                    {/* Small Image */}
-                    {item.image && (
-                      <div className="flex-shrink-0">
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-14 h-14 sm:w-16 sm:h-16 object-cover rounded-lg"
-                          onError={(e) => {
-                            e.currentTarget.style.display = "none";
-                          }}
-                        />
-                      </div>
-                    )}
+                  {/* Quick badge */}
+                  {totalInCart > 0 && (
+                    <div className="absolute -top-2 -right-2 w-7 h-7 bg-emerald-500 rounded-full flex items-center justify-center text-xs font-bold text-white shadow-lg z-10">
+                      {totalInCart}
+                    </div>
+                  )}
 
-                    {/* Content */}
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1 flex-wrap">
-                        <h3 className={`text-sm sm:text-base font-semibold truncate ${
-                          isOutOfStock ? "text-slate-500" : "text-white"
-                        }`}>
+                  <div className="p-4">
+                    <div className="flex gap-4">
+                      {/* Image */}
+                      {item.image && (
+                        <div className="flex-shrink-0">
+                          <img
+                            src={item.image}
+                            alt={item.name}
+                            className="w-20 h-20 object-cover rounded-lg"
+                            onError={(e) => {
+                              e.currentTarget.style.display = "none";
+                            }}
+                          />
+                        </div>
+                      )}
+
+                      {/* Content */}
+                      <div className="flex-1 min-w-0">
+                        <h3
+                          className="font-semibold text-white mb-1 truncate"
+                          style={{ fontFamily: "var(--font-body), sans-serif" }}
+                        >
                           {item.name}
                         </h3>
-                        {totalInCart > 0 && (
-                          <span className="px-2 py-0.5 bg-emerald-500/20 border border-emerald-500/30 rounded text-[10px] font-semibold text-emerald-400">
-                            {totalInCart} in cart
-                          </span>
-                        )}
-                        {isOutOfStock && (
-                          <span className="text-xs text-red-400">(Out of Stock)</span>
-                        )}
-                      </div>
-                      {/* Show cart items breakdown if multiple plate types in cart - Hidden on mobile */}
-                      {hasHalfFull && allCartItemsForProduct.length > 0 && (
-                        <div className="mb-2 space-y-0.5 hidden sm:block">
-                          {allCartItemsForProduct.map((cartItem, idx) => (
-                            <div key={idx} className="text-[10px] text-slate-400 flex items-center gap-2">
-                              <span className="px-1.5 py-0.5 bg-slate-700/30 rounded">
-                                {cartItem.plateType === "half" ? "Half" : "Full"} plate: {cartItem.quantity} × ₹{cartItem.price} = ₹{(cartItem.quantity * cartItem.price).toFixed(2)}
+
+                        {/* Price & Stock in one line */}
+                        <div className="flex items-center gap-4 mb-3">
+                          <div>
+                            <span className="text-xl font-bold text-amber-400">
+                              ₹{displayPrice}
+                            </span>
+                          </div>
+                          <div className="text-xs">
+                            <span className="text-slate-500 text-md lg:text-lg">
+                              Stock:{" "}
+                            </span>
+                            <span
+                              className={`text-xl lg:text-xl sm:text-base font-semibold ${
+                                item.stock === 0
+                                  ? "text-red-400"
+                                  : item.stock <= 5
+                                  ? "text-amber-400"
+                                  : "text-emerald-400"
+                              }`}
+                            >
+                              {item.stock} Plate
+                            </span>
+                          </div>
+                        </div>
+
+                        {/* Half/Full Toggle - Compact */}
+                        {hasHalfFull && !isOutOfStock && (
+                          <div className="mb-3">
+                            <button
+                              onClick={() =>
+                                togglePlateType(
+                                  item.id,
+                                  currentPlateType || "half"
+                                )
+                              }
+                              className="relative inline-flex rounded-lg overflow-hidden bg-slate-700/50 border border-slate-600 cursor-pointer"
+                            >
+                              <div
+                                className={`absolute top-0 bottom-0 w-1/2 bg-amber-500 transition-transform duration-300 ${
+                                  currentPlateType === "half"
+                                    ? "translate-x-0"
+                                    : "translate-x-full"
+                                }`}
+                              />
+                              <span
+                                className={`relative z-10 px-4 py-1.5 text-sm font-medium transition-colors ${
+                                  currentPlateType === "half"
+                                    ? "text-white"
+                                    : "text-slate-400"
+                                }`}
+                              >
+                                Half
                               </span>
+                              <span
+                                className={`relative z-10 px-4 py-1.5 text-sm font-medium transition-colors ${
+                                  currentPlateType === "full"
+                                    ? "text-white"
+                                    : "text-slate-400"
+                                }`}
+                              >
+                                Full
+                              </span>
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Cart breakdown for multiple plates */}
+                        {hasHalfFull && allCartItemsForProduct.length > 1 && (
+                          <div className="mb-2 space-y-1">
+                            {allCartItemsForProduct.map((ci, idx) => (
+                              <div
+                                key={idx}
+                                className="text-[10px] text-slate-400 flex items-center gap-2"
+                              >
+                                <span className="px-2 py-0.5 bg-slate-700/40 rounded">
+                                  {ci.plateType === "half" ? "Half" : "Full"}:{" "}
+                                  {ci.quantity} × ₹{ci.price}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Actions */}
+                        {quantity > 0 ? (
+                          <div className="flex items-center gap-2">
+                            <div className="flex items-center gap-2 bg-slate-700/30 rounded-lg px-2 py-1">
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, -1, currentPlateType)
+                                }
+                                className="w-9 h-9 flex items-center justify-center bg-slate-600/50 hover:bg-slate-600 rounded-md transition-colors cursor-pointer"
+                              >
+                                <Minus className="w-6 h-6 text-white" />
+                              </button>
+                              <span className="text-lg lg:text-xl font-bold text-white min-w-[24px] text-center">
+                                {quantity}
+                              </span>
+                              <button
+                                onClick={() =>
+                                  updateQuantity(item.id, 1, currentPlateType)
+                                }
+                                disabled={totalInCart >= item.stock}
+                                className="w-9 h-9 flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 rounded-md transition-colors disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                              >
+                                <Plus className="w-6 h-6 text-white" />
+                              </button>
                             </div>
-                          ))}
-                        </div>
-                      )}
-                      <div className="flex items-center gap-4 sm:gap-3 mb-2 sm:mb-2">
-                        <div>
-                          <p className={`text-[10px] sm:text-xs ${isOutOfStock ? "text-slate-600" : "text-slate-500"}`}>
-                            Price
-                          </p>
-                          <p className={`text-sm sm:text-base font-bold ${
-                            isOutOfStock ? "text-slate-500" : "text-amber-400"
-                          }`}>
-                            ₹{displayPrice}
-                          </p>
-                        </div>
-                        <div>
-                          <p className={`text-[10px] sm:text-xs ${isOutOfStock ? "text-slate-600" : "text-slate-500"}`}>
-                            Stock
-                          </p>
-                          <p
-                            className={`text-sm sm:text-base font-bold ${
+                            <button
+                              onClick={() =>
+                                removeFromCart(item.id, currentPlateType)
+                              }
+                              className="w-9 h-9 flex items-center justify-center bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-md text-red-400 transition-colors cursor-pointer"
+                            >
+                              <Trash2 className="w-6 h-6" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button
+                            onClick={() => !isOutOfStock && addToCart(item)}
+                            disabled={isOutOfStock}
+                            className={`w-full px-4 py-2 font-semibold rounded-lg transition-all text-sm flex items-center justify-center gap-2 ${
                               isOutOfStock
-                                ? "text-slate-500"
-                                : item.stock === 0
-                                ? "text-red-400"
-                                : item.stock <= 5
-                                ? "text-amber-400"
-                                : "text-emerald-400"
+                                ? "bg-slate-700/50 text-slate-500 cursor-not-allowed"
+                                : "bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-500 hover:to-green-500 cursor-pointer"
                             }`}
                           >
-                            {item.stock}
-                          </p>
-                        </div>
-                      </div>
-                      {/* Half/Full Plate Toggle */}
-                      {hasHalfFull && !isOutOfStock && (
-                        <div className="mb-2 sm:mb-2">
-                          <button
-                            onClick={() => togglePlateType(item.id, currentPlateType || "half")}
-                            className="flex items-center gap-2 px-3 py-1.5 sm:py-1.5 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg transition-all text-xs sm:text-sm cursor-pointer w-full sm:w-auto justify-center sm:justify-start"
-                          >
-                            <span className={`px-2.5 py-1 rounded text-xs ${currentPlateType === "half" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
-                              Half
-                            </span>
-                            <span className="text-slate-500">/</span>
-                            <span className={`px-2.5 py-1 rounded text-xs ${currentPlateType === "full" ? "bg-amber-600 text-white" : "text-slate-400"}`}>
-                              Full
-                            </span>
-                          </button>
-                          {allCartItemsForProduct.length > 0 && (
-                            <span className="text-[9px] sm:text-[10px] text-slate-500 italic hidden sm:inline-block mt-1">
-                              Toggle to add different plate type
-                            </span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Quantity Controls */}
-                    {quantity > 0 ? (
-                      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 flex-shrink-0 w-full sm:w-auto">
-                        <div className="flex items-center justify-between sm:justify-center gap-2 bg-slate-700/30 rounded-lg p-1.5 sm:p-0 sm:bg-transparent">
-                          <button
-                            onClick={() => updateQuantity(item.id, -1, currentPlateType)}
-                            className="w-9 h-9 sm:w-9 sm:h-9 flex items-center justify-center bg-slate-700/50 hover:bg-slate-700 border border-slate-600 rounded-lg text-white transition-all active:scale-95"
-                          >
-                            <Minus className="w-4 h-4" />
-                          </button>
-                          <div className="flex flex-col items-center min-w-[50px]">
-                            <span className="text-base sm:text-base font-bold text-white">
-                              {quantity}
-                            </span>
-                            {hasHalfFull && (
-                              <span className="text-[9px] text-slate-400">
-                                {currentPlateType === "half" ? "Half" : "Full"}
-                              </span>
-                            )}
-                          </div>
-                          <button
-                            onClick={() => updateQuantity(item.id, 1, currentPlateType)}
-                            disabled={totalInCart >= item.stock}
-                            className="w-9 h-9 sm:w-9 sm:h-9 flex items-center justify-center bg-emerald-600 hover:bg-emerald-500 border border-emerald-500 rounded-lg text-white transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
                             <Plus className="w-4 h-4" />
+                            {isOutOfStock ? "Out of Stock" : "Add"}
                           </button>
-                        </div>
-                        <button
-                          onClick={() => removeFromCart(item.id, currentPlateType)}
-                          className="w-full sm:w-9 sm:h-9 flex items-center justify-center gap-2 sm:gap-0 bg-red-500/10 hover:bg-red-500/20 border border-red-500/30 rounded-lg text-red-400 transition-all active:scale-95 py-2 sm:py-0"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                          <span className="text-xs sm:hidden">Remove</span>
-                        </button>
+                        )}
                       </div>
-                    ) : (
-                      <button
-                        onClick={() => !isOutOfStock && addToCart(item)}
-                        disabled={isOutOfStock}
-                        className={`w-full sm:w-auto flex-shrink-0 px-4 sm:px-4 py-2.5 sm:py-2.5 font-semibold rounded-lg transition-all duration-300 active:scale-95 text-xs sm:text-sm flex items-center justify-center gap-1.5 ${
-                          isOutOfStock
-                            ? "bg-slate-700/50 text-slate-500 border border-slate-600/30 cursor-not-allowed"
-                            : "bg-gradient-to-r from-emerald-600 to-green-600 text-white hover:from-emerald-500 hover:to-green-500 shadow-lg shadow-emerald-500/30 cursor-pointer"
-                        }`}
-                      >
-                        <Plus className="w-4 h-4" />
-                        <span>{isOutOfStock ? "Out of Stock" : "Add to Cart"}</span>
-                      </button>
-                    )}
+                    </div>
                   </div>
-                </div>
+                </motion.div>
               );
             })}
           </div>
         )}
       </div>
 
-      {/* Fixed Cart Summary at Bottom */}
-      {cart.length > 0 && (
-        <div className="fixed bottom-0 left-0 right-0 bg-gradient-to-br from-slate-900 to-slate-800 border-t border-slate-700/50 shadow-2xl z-50">
-
-          {/* Cart Details Toggle */}
-          <AnimatePresence>
-            {showCartDetails && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: "auto", opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                transition={{ duration: 0.3, ease: "easeInOut" }}
-                className="overflow-hidden border-b border-slate-700/50 bg-slate-800/50"
-              >
-                <div className="max-h-48 overflow-y-auto">
-                  <div className="container mx-auto px-3 sm:px-4 py-3 space-y-2">
-                    {cart.map((cartItem, index) => (
-                      <motion.div
-                        key={`${cartItem.itemId}-${cartItem.plateType || 'none'}-${index}`}
-                        initial={{ opacity: 0, x: -20 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        transition={{ duration: 0.2, delay: index * 0.05 }}
-                        className="flex items-center justify-between text-xs sm:text-sm bg-slate-700/30 rounded-lg p-2"
+      {/* Floating Cart */}
+      <AnimatePresence>
+        {cart.length > 0 && (
+          <motion.div
+            initial={{ y: 100, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: 100, opacity: 0 }}
+            className="fixed bottom-0 left-0 right-0 bg-slate-900/95 backdrop-blur-xl border-t border-slate-700/50 shadow-2xl z-50"
+          >
+            {/* Expandable Cart Details */}
+            <AnimatePresence>
+              {showCartDetails && (
+                <motion.div
+                  initial={{ height: 0 }}
+                  animate={{ height: "auto" }}
+                  exit={{ height: 0 }}
+                  className="overflow-hidden border-b border-slate-700/50"
+                >
+                  <div className="max-h-64 overflow-y-auto p-4 space-y-2">
+                    {cart.map((ci, idx) => (
+                      <div
+                        key={`${ci.itemId}-${ci.plateType}-${idx}`}
+                        className="flex items-center justify-between bg-slate-800/50 rounded-lg p-3"
                       >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white font-medium truncate">
-                            {cartItem.itemName}
-                            {cartItem.plateType && (
-                              <span className="text-slate-400 ml-1">
-                                ({cartItem.plateType === "half" ? "Half" : "Full"} plate)
+                        <div className="flex-1">
+                          <p className="text-sm font-medium text-white">
+                            {ci.itemName}
+                            {ci.plateType && (
+                              <span className="text-slate-400 text-xs ml-1">
+                                ({ci.plateType === "half" ? "Half" : "Full"})
                               </span>
                             )}
                           </p>
-                          <p className="text-slate-400">
-                            Qty: {cartItem.quantity} × ₹{cartItem.price} = ₹{(cartItem.quantity * cartItem.price).toFixed(2)}
+                          <p className="text-xs text-slate-400">
+                            {ci.quantity} × ₹{ci.price} = ₹
+                            {(ci.quantity * ci.price).toFixed(2)}
                           </p>
                         </div>
                         <button
-                          onClick={() => removeFromCart(cartItem.itemId, cartItem.plateType)}
-                          className="ml-2 p-1.5 hover:bg-red-500/20 rounded transition-colors"
+                          onClick={() =>
+                            removeFromCart(ci.itemId, ci.plateType)
+                          }
+                          className="p-2 hover:bg-red-500/20 rounded-lg transition-colors cursor-pointer"
                         >
-                          <Trash2 className="w-3.5 h-3.5 text-red-400" />
+                          <Trash2 className="w-5 h-5 text-red-400" />
                         </button>
-                      </motion.div>
+                      </div>
                     ))}
                   </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                </motion.div>
+              )}
+            </AnimatePresence>
 
-          {/* Main Cart Summary */}
-          <div className="p-3 sm:p-4">
-            <div className="container mx-auto px-3 sm:px-4">
-              <div className="flex items-center justify-between gap-3 sm:gap-4">
+            {/* Cart Summary */}
+            <div className="p-4">
+              <div className="max-w-6xl mx-auto flex items-center gap-4">
+                <button
+                  onClick={() => setShowCartDetails(!showCartDetails)}
+                  className="w-12 h-12 flex items-center justify-center bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-xl transition-all cursor-pointer"
+                >
+                  <motion.div
+                    animate={{ rotate: showCartDetails ? 180 : 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <ChevronUp className="w-5 h-5 text-emerald-400" />
+                  </motion.div>
+                </button>
+
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">
-                    <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400" />
-                    <span className="text-xs sm:text-sm text-slate-400">
-                      {cart.length} {cart.length === 1 ? "item" : "items"}
+                    <ShoppingCart className="w-4 h-4 text-emerald-400" />
+                    <span className="text-xs text-slate-400">
+                      {cart.length} item{cart.length !== 1 ? "s" : ""}
                     </span>
                   </div>
-                  <p className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+                  <p className="text-2xl font-bold text-white">
                     ₹{totalAmount.toFixed(2)}
                   </p>
                 </div>
-                <div className="flex items-center gap-2 sm:gap-3">
-                  <button
-                    onClick={() => setShowCartDetails(!showCartDetails)}
-                    className="flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 bg-slate-700/50 hover:bg-slate-700 border border-slate-600 hover:border-emerald-500/50 rounded-lg transition-all duration-300 group cursor-pointer"
-                    aria-label={showCartDetails ? "Hide cart details" : "Show cart details"}
-                  >
-                    <motion.div
-                      animate={{ rotate: showCartDetails ? 180 : 0 }}
-                      transition={{ duration: 0.3, ease: "easeInOut" }}
-                    >
-                      <ChevronUp className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-                    </motion.div>
-                  </button>
-                  <button
-                    onClick={proceedToCheckout}
-                    className="px-4 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg shadow-emerald-500/30 text-sm sm:text-base whitespace-nowrap"
-                  >
-                    Proceed to Checkout
-                  </button>
-                </div>
+
+                <button
+                  onClick={proceedToCheckout}
+                  className="px-8 py-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all shadow-lg shadow-emerald-500/30 cursor-pointer"
+                >
+                  Checkout
+                </button>
               </div>
             </div>
-          </div>
-        </div>
-      )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

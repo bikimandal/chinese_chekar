@@ -1,17 +1,25 @@
 import type { Metadata } from "next";
-import { Playfair_Display, Inter, Dancing_Script } from "next/font/google";
+import { Cormorant, Inter, Dancing_Script, Cinzel } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TopProgressBar from "@/components/TopProgressBar";
 
-// Elegant serif font for headings - perfect for restaurant branding
-const playfair = Playfair_Display({
+// Elegant serif font for headings - refined and professional
+const cormorant = Cormorant({
   variable: "--font-heading",
+  subsets: ["latin"],
+  weight: ["300", "400", "500", "600", "700"],
+  display: "swap",
+  style: ["normal", "italic"],
+});
+
+// Ultra-elegant font for hero section - unique and sophisticated
+const cinzel = Cinzel({
+  variable: "--font-hero",
   subsets: ["latin"],
   weight: ["400", "500", "600", "700", "800", "900"],
   display: "swap",
-  style: ["normal", "italic"],
 });
 
 // Clean, modern sans-serif for body text - excellent readability
@@ -43,7 +51,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${playfair.variable} ${inter.variable} ${dancingScript.variable} antialiased bg-dark-bg text-text-main flex flex-col min-h-screen`}
+        className={`${cormorant.variable} ${inter.variable} ${dancingScript.variable} ${cinzel.variable} antialiased bg-dark-bg text-text-main flex flex-col min-h-screen`}
       >
         <Navbar />
         <TopProgressBar />

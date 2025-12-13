@@ -89,18 +89,25 @@ export default function StoreStatusToggle() {
   }
 
   return (
-    <div className="flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 bg-slate-800/50 border border-slate-700 rounded-xl w-full sm:w-auto">
-      <div className="flex items-center gap-1.5 sm:gap-2 flex-1 sm:flex-initial">
-        <Store className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${status.isOpen ? "text-emerald-400" : "text-gray-400"}`} />
-        <span className="text-xs sm:text-sm font-medium text-slate-300">
-          {status.isOpen ? "Open" : "Closed"}
+    <div className="flex items-center gap-2.5 sm:gap-3 px-4 sm:px-4 py-2.5 sm:py-2 bg-slate-800/50 border border-slate-700 rounded-xl w-full sm:w-auto">
+      <div className="flex items-center gap-2 sm:gap-2 flex-1 sm:flex-initial">
+        <Store className={`w-5 h-5 sm:w-4 sm:h-4 ${status.isOpen ? "text-emerald-400" : "text-gray-400"}`} />
+        <span className="text-sm sm:text-sm font-medium text-slate-300 flex items-center gap-1.5">
+          {isToggling ? (
+            <>
+              <div className="h-3.5 w-3.5 sm:h-3 sm:w-3 border-2 border-slate-400 border-t-transparent rounded-full animate-spin"></div>
+              <span>{status.isOpen ? "Opening..." : "Closing..."}</span>
+            </>
+          ) : (
+            <span>{status.isOpen ? "Open" : "Closed"}</span>
+          )}
         </span>
       </div>
       
       <button
         onClick={handleToggle}
         disabled={isToggling}
-        className={`relative inline-flex h-5 w-9 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 cursor-pointer ${
+        className={`relative inline-flex h-7 w-12 sm:h-6 sm:w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 focus:ring-offset-slate-900 disabled:opacity-50 disabled:cursor-not-allowed flex-shrink-0 cursor-pointer ${
           status.isOpen ? "bg-emerald-500" : "bg-gray-600"
         }`}
         title={
@@ -109,17 +116,11 @@ export default function StoreStatusToggle() {
             : "Click to mark as Open"
         }
       >
-        {isToggling ? (
-          <span className="absolute inset-0 flex items-center justify-center">
-            <div className="h-2.5 w-2.5 sm:h-3 sm:w-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-          </span>
-        ) : (
-          <span
-            className={`inline-block h-3.5 w-3.5 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
-              status.isOpen ? "translate-x-4 sm:translate-x-6" : "translate-x-0.5 sm:translate-x-1"
-            }`}
-          />
-        )}
+        <span
+          className={`inline-block h-5 w-5 sm:h-4 sm:w-4 transform rounded-full bg-white transition-transform ${
+            status.isOpen ? "translate-x-6 sm:translate-x-6" : "translate-x-0.5 sm:translate-x-1"
+          }`}
+        />
       </button>
     </div>
   );

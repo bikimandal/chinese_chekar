@@ -1,4 +1,5 @@
 import Image from "next/image";
+import { useState } from "react";
 import { Sparkles, TrendingUp, AlertCircle } from "lucide-react";
 
 interface ItemCardProps {
@@ -27,6 +28,9 @@ export default function ItemCard({
   isAvailable = true,
   product,
 }: ItemCardProps) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+
   // Determine display price and full plate price
   const hasHalfFull = product?.hasHalfFullPlate ?? false;
   const displayPrice =
@@ -98,21 +102,43 @@ export default function ItemCard({
 
       {/* Image Container */}
       <div className="relative w-32 h-32 sm:w-full sm:h-48 md:h-56 overflow-hidden bg-slate-900 shrink-0">
-        {image ? (
+        {/* Image Skeleton Loader - Matches exact image dimensions */}
+        {!imageLoaded && !imageError && image && (
+          <div className="absolute inset-0 w-full h-full z-10">
+            <div className="relative w-full h-full bg-gradient-to-r from-slate-700/50 via-slate-600/50 to-slate-700/50 animate-shimmer overflow-hidden">
+              {/* Enhanced shiny overlay effect */}
+              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
+              {/* Secondary shimmer layer for depth */}
+              <div className="absolute inset-0 bg-gradient-to-r from-amber-500/5 via-transparent to-amber-500/5 animate-shimmer-slow opacity-75" />
+            </div>
+          </div>
+        )}
+
+        {image && !imageError ? (
           <>
             <Image
               src={image}
               alt={name}
               fill
               loading="lazy"
-              className={`object-cover transition-all duration-700 ${
+              onLoad={() => {
+                setImageLoaded(true);
+              }}
+              onError={() => {
+                setImageError(true);
+                setImageLoaded(false);
+              }}
+              className={`object-cover transition-opacity duration-500 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              } ${
                 isDisabled
-                  ? "opacity-50"
+                  ? "!opacity-50"
                   : isOutOfStock
-                  ? "opacity-60"
-                  : "group-hover:scale-110 group-hover:rotate-1"
+                  ? "!opacity-60"
+                  : "group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
               }`}
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              sizes="(max-width: 640px) 128px, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
+              quality={85}
             />
             {/* Multiple gradient overlays for depth */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>
@@ -185,10 +211,10 @@ export default function ItemCard({
       {/* Content */}
       <div className="flex-1 p-2.5 sm:p-3 md:p-4 lg:p-5 flex flex-col min-h-0">
         {/* Title and Price */}
-        <div className="flex justify-between items-start gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
-          <div className="flex-1 min-w-0 pr-2">
+        <div className="flex justify-between items-start gap-1.5 sm:gap-2 mb-1.5 sm:mb-2 md:mb-2.5">
+          <div className="flex-1 min-w-0 pr-1 sm:pr-1.5">
             <h3
-              className={`text-sm sm:text-base md:text-lg lg:text-xl font-semibold transition-all duration-300 font-sans ${
+              className={`text-sm sm:text-base md:text-lg lg:text-xl font-semibold transition-all duration-300 font-sans leading-tight ${
                 isDisabled
                   ? "text-slate-500"
                   : isOutOfStock
@@ -204,9 +230,9 @@ export default function ItemCard({
               {category}
             </span>
           </div>
-          <div className="flex flex-col items-end shrink-0">
+          <div className="flex flex-col items-end shrink-0 min-w-fit">
             <span
-              className={`text-base sm:text-lg md:text-xl lg:text-2xl font-bold ${
+              className={`text-lg sm:text-lg md:text-xl lg:text-2xl font-bold ${
                 isDisabled
                   ? "text-slate-600"
                   : isOutOfStock
@@ -216,38 +242,40 @@ export default function ItemCard({
             >
               ₹{displayPrice}
             </span>
-            <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500">
+            <span className="text-[10px] sm:text-[10px] md:text-xs text-slate-500 mt-0.5">
               {hasHalfFull ? "half plate" : "per serving"}
             </span>
-            {/* Always reserve space for full plate price, show placeholder if not available */}
-            <div
-              className={`mt-1.5 sm:mt-2 px-2 py-1 rounded-md ${
-                hasHalfFull && fullPlatePrice
-                  ? isDisabled
-                    ? "bg-slate-700/20 border border-slate-600/20"
-                    : isOutOfStock
-                    ? "bg-purple-500/10 border border-purple-500/20"
-                    : "bg-amber-500/10 border border-amber-500/20"
-                  : "invisible"
-              }`}
-              style={{
-                minHeight: hasHalfFull && fullPlatePrice ? "auto" : "28px",
-              }}
-            >
-              {hasHalfFull && fullPlatePrice && (
-                <span
-                  className={`text-[10px] sm:text-xs font-semibold ${
+            {/* Full plate price with Low Stock badge - Better mobile design */}
+            {hasHalfFull && fullPlatePrice && (
+              <div className="mt-2 sm:mt-1.5 flex items-center gap-2 sm:gap-1.5 flex-wrap">
+                {/* Low Stock Badge - To the left of Full Plate */}
+                {stock > 0 && stock <= 5 && isAvailable && (
+                  <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-2.5 py-1.5 sm:py-1.5 md:py-1 bg-gradient-to-r from-amber-500/30 to-orange-500/30 backdrop-blur-sm border border-amber-400/60 rounded-full shadow-lg shadow-amber-500/20">
+                    <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-3.5 md:h-3.5 text-amber-300 animate-pulse" />
+                    <span className="text-[10px] sm:text-xs md:text-[10px] text-amber-200 font-bold whitespace-nowrap">
+                      Low Stock
+                    </span>
+                  </div>
+                )}
+                {/* Full Plate Price */}
+                <div
+                  className={`flex items-center gap-1.5 sm:gap-1 px-2.5 sm:px-2 py-1.5 sm:py-1 rounded-lg sm:rounded-md ${
                     isDisabled
-                      ? "text-slate-600"
+                      ? "bg-slate-700/30 border border-slate-600/30"
                       : isOutOfStock
-                      ? "bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent"
-                      : "bg-gradient-to-r from-amber-400 to-orange-400 bg-clip-text text-transparent"
+                      ? "bg-purple-500/15 border border-purple-500/30"
+                      : "bg-amber-500/15 border border-amber-500/30"
                   }`}
                 >
-                  Full plate: Rs {fullPlatePrice}
-                </span>
-              )}
-            </div>
+                  <span className="text-[10px] sm:text-[10px] md:text-xs text-slate-400 font-medium">
+                    Full Plate:
+                  </span>
+                  <span className="text-sm sm:text-xs font-bold text-white">
+                    ₹{fullPlatePrice}
+                  </span>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -271,72 +299,99 @@ export default function ItemCard({
         </div>
 
         {/* Stock Information - Always show section, content varies */}
-        <div className="pt-1.5 sm:pt-2 md:pt-2.5 border-t border-slate-700/50 mt-auto">
-          {isAvailable ? (
-            <>
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
-                  <div
-                    className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r ${
-                      status.color
-                    } ${stock > 0 ? "animate-pulse" : ""}`}
-                  ></div>
-                  <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 font-medium">
-                    Stock
-                  </span>
-                </div>
-                <div className="flex items-center gap-1 sm:gap-1.5 md:gap-2">
-                  <span
-                    className={`text-xs sm:text-sm font-bold ${
-                      stock > 5
-                        ? "text-white"
-                        : stock > 0
-                        ? "text-amber-400"
-                        : "text-red-400"
-                    }`}
-                  >
-                    {stock}
-                  </span>
-                  <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500">
-                    units
+        <div className="mt-auto">
+          {/* Low Stock Badge - Show above stock section if no Full Plate option */}
+          {stock > 0 &&
+            stock <= 5 &&
+            isAvailable &&
+            (!hasHalfFull || !fullPlatePrice) && (
+              <div className="mb-2 sm:mb-1.5 flex justify-center">
+                <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 md:px-2.5 py-1.5 sm:py-1.5 md:py-1 bg-gradient-to-r from-amber-500/30 to-orange-500/30 backdrop-blur-sm border border-amber-400/60 rounded-full shadow-lg shadow-amber-500/20">
+                  <TrendingUp className="w-3.5 h-3.5 sm:w-4 sm:h-4 md:w-3.5 md:h-3.5 text-amber-300 animate-pulse" />
+                  <span className="text-[10px] sm:text-xs md:text-[10px] text-amber-200 font-bold whitespace-nowrap">
+                    Low Stock
                   </span>
                 </div>
               </div>
+            )}
+          <div
+            className={`pt-2 sm:pt-2 md:pt-2.5 border-t ${
+              stock > 0 && stock <= 5 && isAvailable
+                ? "border-amber-500/50"
+                : "border-slate-700/50"
+            }`}
+          >
+            {isAvailable ? (
+              <>
+                {stock > 0 && stock <= 5 ? (
+                  /* Low Stock Display - "Only x plates available" */
+                  <div className="flex items-center justify-center gap-2">
+                    <AlertCircle className="w-5 h-5 sm:w-4 sm:h-4 text-amber-400 shrink-0 animate-pulse" />
+                    <span className="text-base sm:text-sm font-semibold text-amber-300 text-center">
+                      Only{" "}
+                      <span className="text-white font-bold text-lg sm:text-base">
+                        {stock}
+                      </span>{" "}
+                      {stock === 1 ? "plate" : "plates"} available
+                    </span>
+                  </div>
+                ) : (
+                  /* Normal Stock Display */
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 sm:gap-1.5 md:gap-2">
+                      <div
+                        className={`w-2 h-2 sm:w-2 sm:h-2 rounded-full bg-gradient-to-r ${
+                          status.color
+                        } ${stock > 0 ? "animate-pulse" : ""}`}
+                      ></div>
+                      <span className="text-base sm:text-sm text-slate-400 font-semibold">
+                        Stock
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-1.5 md:gap-2">
+                      <span
+                        className={`text-lg sm:text-base font-bold ${
+                          stock > 5
+                            ? "text-white"
+                            : stock > 0
+                            ? "text-amber-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {stock}
+                      </span>
+                      <span className="text-base sm:text-sm text-slate-400 font-medium">
+                        plates
+                      </span>
+                    </div>
+                  </div>
+                )}
 
-              {/* Stock Progress Bar */}
-              <div className="mt-1.5 sm:mt-2 md:mt-3 h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
-                <div
-                  className={`h-full bg-gradient-to-r ${status.color} transition-all duration-500 rounded-full`}
-                  style={{ width: `${Math.min((stock / 20) * 100, 100)}%` }}
-                >
-                  <div className="h-full w-full bg-white/20 animate-pulse"></div>
-                </div>
-              </div>
-            </>
-          ) : (
-            <div className="flex items-center gap-2">
-              <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-slate-600"></div>
-              <span className="text-[9px] sm:text-[10px] md:text-xs text-slate-500 font-medium">
-                {isDisabled ? "Not Available" : "Out of Stock"}
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* Action Hint - Always reserve space */}
-        <div
-          className="pt-1.5 sm:pt-2 mt-2 hidden sm:block"
-          style={{ minHeight: "40px" }}
-        >
-          {isAvailable && stock > 0 && (
-            <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-              <div className="text-center py-2 px-4 bg-gradient-to-r from-amber-600/20 to-orange-600/20 border border-amber-500/30 rounded-lg">
-                <span className="text-xs text-amber-300 font-medium">
-                  Available for order
+                {/* Stock Progress Bar - Show for all stock levels */}
+                {stock > 0 && (
+                  <div className="mt-1.5 sm:mt-2 md:mt-3 h-1.5 sm:h-2 bg-slate-800 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full bg-gradient-to-r ${
+                        status.color
+                      } transition-all duration-500 rounded-full ${
+                        stock <= 5 ? "animate-pulse" : ""
+                      }`}
+                      style={{ width: `${Math.min((stock / 20) * 100, 100)}%` }}
+                    >
+                      <div className="h-full w-full bg-white/20 animate-pulse"></div>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="flex items-center gap-2">
+                <div className="w-2 h-2 sm:w-2 sm:h-2 rounded-full bg-slate-600"></div>
+                <span className="text-xs sm:text-[10px] md:text-xs text-slate-400 font-semibold">
+                  {isDisabled ? "Not Available" : "Out of Stock"}
                 </span>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
 

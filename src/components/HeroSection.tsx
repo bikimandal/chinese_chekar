@@ -42,13 +42,13 @@ export default function HeroSection() {
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-900">
       {/* Animated Background Gradients */}
       <div className="absolute inset-0 z-0">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-amber-500/20 rounded-full blur-3xl animate-pulse"></div>
+        <div className="absolute top-0 left-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-amber-500/20 rounded-full blur-3xl animate-pulse"></div>
         <div
-          className="absolute bottom-0 right-1/4 w-96 h-96 bg-red-500/20 rounded-full blur-3xl animate-pulse"
+          className="absolute bottom-0 right-1/4 w-64 h-64 sm:w-96 sm:h-96 bg-red-500/20 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "1s" }}
         ></div>
         <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse"
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-64 h-64 sm:w-96 sm:h-96 bg-orange-500/10 rounded-full blur-3xl animate-pulse"
           style={{ animationDelay: "2s" }}
         ></div>
       </div>
@@ -64,24 +64,25 @@ export default function HeroSection() {
         />
       </div>
 
-      {/* Decorative Elements */}
-      <div className="absolute top-10 left-10 w-32 h-32 border-l-2 border-t-2 border-amber-500/30 z-10"></div>
-      <div className="absolute bottom-10 right-10 w-32 h-32 border-r-2 border-b-2 border-amber-500/30 z-10"></div>
+      {/* Decorative Elements - Hidden on mobile, shown on larger screens */}
+      <div className="absolute top-4 left-4 sm:top-10 sm:left-10 w-16 h-16 sm:w-32 sm:h-32 border-l-2 border-t-2 border-amber-500/30 z-10 hidden sm:block"></div>
+      <div className="absolute bottom-4 right-4 sm:bottom-10 sm:right-10 w-16 h-16 sm:w-32 sm:h-32 border-r-2 border-b-2 border-amber-500/30 z-10 hidden sm:block"></div>
 
       {/* Content */}
       <motion.div
-        className="relative z-20 text-center px-4 sm:px-6 max-w-5xl mx-auto py-12 sm:py-16 md:py-20"
+        className="relative z-20 text-center px-4 sm:px-6 lg:px-8 max-w-5xl mx-auto py-8 sm:py-12 md:py-16 lg:py-20"
         variants={containerVariants}
         initial="hidden"
-        animate="visible"
+        whileInView="visible"
+        viewport={{ margin: "-100px" }}
       >
         {/* Premium Badge */}
         <motion.div
           variants={itemVariants}
-          className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 backdrop-blur-sm border border-amber-500/20 rounded-full mb-6 sm:mb-8"
+          className="inline-flex items-center gap-1.5 sm:gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 backdrop-blur-sm border border-amber-500/20 rounded-full mb-4 sm:mb-6 md:mb-8"
         >
-          <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400" />
-          <span className="text-xs sm:text-sm text-amber-200 font-medium tracking-wider">
+          <Sparkles className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 shrink-0" />
+          <span className="text-[10px] sm:text-xs md:text-sm text-amber-200 font-medium tracking-wider">
             AUTHENTIC CHINESE CUISINE
           </span>
         </motion.div>
@@ -89,14 +90,17 @@ export default function HeroSection() {
         {/* Main Heading */}
         <motion.h1
           variants={itemVariants}
-          className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-bold mb-4 sm:mb-6 leading-tight"
+          className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl 2xl:text-8xl font-bold mb-3 sm:mb-4 md:mb-6 leading-tight px-2"
+          style={{ fontFamily: "var(--font-hero), serif" }}
         >
-          <span className="block text-white">Experience the</span>
+          <span className="block text-white tracking-wide">Experience the</span>
           <motion.span
-            className="block bg-gradient-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent"
+            className="block bg-gradient-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent tracking-wide"
             initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ margin: "-100px" }}
             transition={{ duration: 0.8, delay: 0.3 }}
+            style={{ fontFamily: "var(--font-hero), serif" }}
           >
             Art of Flavor
           </motion.span>
@@ -105,37 +109,42 @@ export default function HeroSection() {
         {/* Decorative Line */}
         <motion.div
           variants={itemVariants}
-          className="flex items-center justify-center gap-4 mb-8"
+          className="flex items-center justify-center gap-3 sm:gap-4 mb-6 sm:mb-8"
         >
-          <div className="h-px w-12 bg-gradient-to-r from-transparent to-amber-500"></div>
+          <div className="h-px w-8 sm:w-12 bg-gradient-to-r from-transparent to-amber-500"></div>
           <motion.div
-            className="w-2 h-2 bg-amber-500 rounded-full"
+            className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-amber-500 rounded-full"
             animate={{ scale: [1, 1.2, 1] }}
             transition={{ duration: 2, repeat: Infinity }}
           ></motion.div>
-          <div className="h-px w-12 bg-gradient-to-l from-transparent to-amber-500"></div>
+          <div className="h-px w-8 sm:w-12 bg-gradient-to-l from-transparent to-amber-500"></div>
         </motion.div>
 
         {/* Subtitle */}
         <motion.p
           variants={itemVariants}
-          className="text-base sm:text-lg md:text-xl lg:text-2xl text-slate-300 mb-8 sm:mb-10 md:mb-12 font-light max-w-3xl mx-auto leading-relaxed px-2"
+          className="text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl text-slate-300 mb-6 sm:mb-8 md:mb-10 lg:mb-12 font-light max-w-3xl mx-auto leading-relaxed px-2 sm:px-4"
         >
-          Where authentic flavors meet modern elegance.
-          <span className="block mt-2 text-sm sm:text-base md:text-lg lg:text-xl text-slate-400">
-            Discover our live menu with exclusive daily specials.
+          Where authentic Chinese flavors meet contemporary culinary excellence.
+          <span className="block mt-2 text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-slate-400">
+            Explore our live menu featuring exclusive daily specials and
+            seasonal delights.
           </span>
         </motion.p>
 
         {/* CTA Buttons */}
         <motion.div
           variants={itemVariants}
-          className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 mb-8 sm:mb-10 md:mb-12 px-2"
+          className="flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-4 sm:gap-4 mb-6 sm:mb-8 md:mb-10 lg:mb-12 px-2 sm:px-4 max-w-md sm:max-w-none mx-auto"
         >
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full sm:w-auto"
+          >
             <Link
               href="/inventory"
-              className="group relative px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-full transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/30 flex items-center gap-2 overflow-hidden w-full sm:w-auto justify-center"
+              className="group relative px-6 sm:px-8 py-3 sm:py-3.5 md:py-4 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-full transition-all duration-300 hover:shadow-2xl hover:shadow-amber-500/30 flex items-center justify-center gap-2 overflow-hidden w-full sm:w-auto min-w-[200px] sm:min-w-0"
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-amber-500 to-orange-500"
@@ -143,24 +152,29 @@ export default function HeroSection() {
                 whileHover={{ opacity: 1 }}
                 transition={{ duration: 0.3 }}
               />
-              <span className="relative font-semibold text-sm sm:text-base md:text-lg">
+              <span className="relative font-semibold text-sm sm:text-base md:text-lg whitespace-nowrap">
                 View Live Menu
               </span>
               <motion.div
                 whileHover={{ x: 5 }}
                 transition={{ type: "spring", stiffness: 400, damping: 10 }}
+                className="shrink-0"
               >
                 <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5" />
               </motion.div>
             </Link>
           </motion.div>
 
-          <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+          <motion.div
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            className="w-full sm:w-auto"
+          >
             <Link
               href="/about"
-              className="group px-6 sm:px-8 py-3 sm:py-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 hover:border-amber-500/50 text-white rounded-full transition-all duration-300 hover:bg-slate-800/70 w-full sm:w-auto text-center"
+              className="group px-6 sm:px-8 py-3 sm:py-3.5 md:py-4 bg-slate-800/50 backdrop-blur-sm border border-slate-700 hover:border-amber-500/50 text-white rounded-full transition-all duration-300 hover:bg-slate-800/70 w-full sm:w-auto text-center min-w-[200px] sm:min-w-0 inline-block"
             >
-              <span className="font-semibold text-sm sm:text-base md:text-lg">
+              <span className="font-semibold text-sm sm:text-base md:text-lg whitespace-nowrap">
                 Our Story
               </span>
             </Link>
@@ -169,8 +183,11 @@ export default function HeroSection() {
 
         {/* Features */}
         <motion.div
-          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto px-2"
+          className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-5 md:gap-6 max-w-4xl mx-auto px-2 sm:px-4"
           variants={containerVariants}
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ margin: "-100px" }}
         >
           {[
             {
@@ -190,7 +207,8 @@ export default function HeroSection() {
                 </svg>
               ),
               title: "Fresh Daily",
-              description: "Premium ingredients sourced daily for authentic taste",
+              description:
+                "Premium ingredients sourced fresh daily for an authentic culinary experience",
             },
             {
               icon: (
@@ -200,7 +218,8 @@ export default function HeroSection() {
                 </div>
               ),
               title: "Live Updates",
-              description: "Real-time inventory tracking for your convenience",
+              description:
+                "Real-time inventory tracking ensures you always know what's available",
             },
             {
               icon: (
@@ -218,8 +237,9 @@ export default function HeroSection() {
                   />
                 </svg>
               ),
-              title: "Authentic Recipe",
-              description: "Traditional methods passed down through generations",
+              title: "Authentic Recipes",
+              description:
+                "Time-honored traditional methods perfected through generations of expertise",
               colSpan: "sm:col-span-2 md:col-span-1",
             },
           ].map((feature, index) => (
@@ -227,7 +247,9 @@ export default function HeroSection() {
               key={index}
               variants={featureVariants}
               whileHover={{ y: -5, scale: 1.02 }}
-              className={`p-4 sm:p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300 ${feature.colSpan || ""}`}
+              className={`p-4 sm:p-6 bg-slate-800/30 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-700/50 hover:border-amber-500/30 transition-all duration-300 ${
+                feature.colSpan || ""
+              }`}
             >
               <motion.div
                 className="w-10 h-10 sm:w-12 sm:h-12 bg-gradient-to-br from-amber-500/20 to-orange-500/20 rounded-full flex items-center justify-center mb-3 sm:mb-4 mx-auto"
@@ -249,18 +271,19 @@ export default function HeroSection() {
 
       {/* Scroll Indicator */}
       <motion.div
-        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-20"
+        className="absolute bottom-4 sm:bottom-8 left-1/2 transform -translate-x-1/2 z-20"
         initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ margin: "-50px" }}
         transition={{ delay: 1.5, duration: 0.6 }}
       >
         <motion.div
-          className="w-6 h-10 border-2 border-amber-500/30 rounded-full flex items-start justify-center p-2"
+          className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-amber-500/30 rounded-full flex items-start justify-center p-1.5 sm:p-2"
           animate={{ y: [0, 10, 0] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
           <motion.div
-            className="w-1 h-2 bg-amber-400 rounded-full"
+            className="w-1 h-1.5 sm:h-2 bg-amber-400 rounded-full"
             animate={{ opacity: [0.5, 1, 0.5] }}
             transition={{ duration: 1.5, repeat: Infinity }}
           />
