@@ -100,7 +100,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
         filter: "blur(0px)",
         transition: {
           duration: 0.6,
-          ease: [0.16, 1, 0.3, 1], // Smooth, refined easing (easeOutExpo-like)
+          ease: [0.16, 1, 0.3, 1] as [number, number, number, number], // Smooth, refined easing (easeOutExpo-like)
           delay: index * 0.06, // Optimized stagger timing
           opacity: { duration: 0.4 }, // Faster opacity fade
           filter: { duration: 0.5 }, // Slightly faster blur
@@ -112,7 +112,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
         filter: "blur(2px)",
         transition: {
           duration: 0.25,
-          ease: [0.4, 0, 1, 1], // Quick exit
+          ease: [0.4, 0, 1, 1] as [number, number, number, number], // Quick exit
         },
       },
     };
@@ -148,7 +148,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
                   scale: 1.02,
                   transition: { 
                     duration: 0.3,
-                    ease: [0.25, 0.46, 0.45, 0.94]
+                    ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number]
                   } 
                 }}
                 style={{ 
