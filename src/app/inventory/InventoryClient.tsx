@@ -81,34 +81,41 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
     return <InventoryItemsSkeleton count={skeletonCount} />;
   }
 
-  const containerVariants = {
-    hidden: { opacity: 0 },
-    visible: {
-      opacity: 1,
-      transition: {
-        staggerChildren: 0.1,
-        delayChildren: 0.1,
+  // Create item variants with alternating entrance directions - refined and optimized
+  const getItemVariants = (index: number) => {
+    const isEven = index % 2 === 0;
+    return {
+      hidden: {
+        opacity: 0,
+        x: isEven ? 60 : -60, // Reduced distance for smoother entrance
+        scale: 0.92,
+        rotateY: isEven ? 8 : -8, // More subtle 3D effect
+        filter: "blur(4px)", // Subtle blur for depth
       },
-    },
-  };
-
-  const itemVariants = {
-    hidden: { opacity: 0, y: 20, scale: 0.95 },
-    visible: {
-      opacity: 1,
-      y: 0,
-      scale: 1,
-      transition: {
-        duration: 0.4,
+      visible: {
+        opacity: 1,
+        x: 0,
+        scale: 1,
+        rotateY: 0,
+        filter: "blur(0px)",
+        transition: {
+          duration: 0.6,
+          ease: [0.16, 1, 0.3, 1] as [number, number, number, number], // Smooth, refined easing (easeOutExpo-like)
+          delay: index * 0.06, // Optimized stagger timing
+          opacity: { duration: 0.4 }, // Faster opacity fade
+          filter: { duration: 0.5 }, // Slightly faster blur
+        },
       },
-    },
-    exit: {
-      opacity: 0,
-      scale: 0.95,
-      transition: {
-        duration: 0.2,
+      exit: {
+        opacity: 0,
+        scale: 0.95,
+        filter: "blur(2px)",
+        transition: {
+          duration: 0.25,
+          ease: [0.4, 0, 1, 1] as [number, number, number, number], // Quick exit
+        },
       },
-    },
+    };
   };
 
   return (
@@ -125,19 +132,30 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
           </p>
         </motion.div>
       ) : (
-        <motion.div
-          className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
+        <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
           <AnimatePresence mode="popLayout">
             {items.map((item, index) => (
               <motion.div
                 key={item.id}
-                variants={itemVariants}
+                variants={getItemVariants(index)}
+                initial="hidden"
+                whileInView="visible"
+                viewport={{ once: true, margin: "-100px" }} // Trigger earlier for smoother entry
+                exit="exit"
                 layout
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
+                whileHover={{ 
+                  y: -5, 
+                  scale: 1.02,
+                  transition: { 
+                    duration: 0.3,
+                    ease: [0.25, 0.46, 0.45, 0.94] as [number, number, number, number]
+                  } 
+                }}
+                style={{ 
+                  perspective: 1000,
+                  transformStyle: "preserve-3d",
+                  willChange: "transform, opacity" // Performance optimization
+                }}
               >
                 <ItemCard
                   id={item.id}
@@ -153,7 +171,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
               </motion.div>
             ))}
           </AnimatePresence>
-        </motion.div>
+        </div>
       )}
     </>
   );

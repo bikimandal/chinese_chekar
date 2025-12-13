@@ -90,8 +90,10 @@ export default function CheckoutPage() {
 
     try {
       const saleItems = cart.map((item) => {
-        const displayName = item.plateType 
-          ? `${item.itemName} (${item.plateType === "half" ? "Half plate" : "Full plate"})`
+        const displayName = item.plateType
+          ? `${item.itemName} (${
+              item.plateType === "half" ? "Half plate" : "Full plate"
+            })`
           : item.itemName;
         return {
           itemId: item.itemId,
@@ -165,8 +167,8 @@ export default function CheckoutPage() {
   const totalAmount = getTotalAmount();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4 max-w-2xl">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
+      <div className="container mx-auto px-3 sm:px-4 pt-6 sm:pt-8 pb-3 sm:pb-4 max-w-2xl flex-1">
         {/* Header */}
         <div className="mb-4 sm:mb-6 no-print">
           <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4">
@@ -175,7 +177,10 @@ export default function CheckoutPage() {
                 <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-emerald-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-200 to-green-200 bg-clip-text text-transparent truncate">
+                <h1
+                  className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-200 to-green-200 bg-clip-text text-transparent truncate"
+                  style={{ fontFamily: "var(--font-body), sans-serif" }}
+                >
                   Checkout
                 </h1>
                 <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
@@ -191,39 +196,50 @@ export default function CheckoutPage() {
           <>
             {/* Order Summary */}
             <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-slate-700/50 p-4 sm:p-6 mb-4">
-              <h2 className="text-lg sm:text-xl font-semibold text-white mb-4">
+              <h2
+                className="text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-4 sm:mb-6"
+                style={{ fontFamily: "var(--font-body), sans-serif" }}
+              >
                 Order Summary
               </h2>
-              <div className="space-y-3">
+              <div className="space-y-3 sm:space-y-4">
                 {cart.map((item) => {
-                  const displayName = item.plateType 
-                    ? `${item.itemName} (${item.plateType === "half" ? "Half plate" : "Full plate"})`
+                  const displayName = item.plateType
+                    ? `${item.itemName} (${
+                        item.plateType === "half" ? "Half plate" : "Full plate"
+                      })`
                     : item.itemName;
                   return (
                     <div
                       key={item.itemId}
-                      className="flex items-center justify-between pb-3 border-b border-slate-700/50 last:border-0"
+                      className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-700/50 last:border-0"
                     >
-                      <div className="flex-1">
-                        <p className="text-sm sm:text-base font-medium text-white">
+                      <div className="flex-1 min-w-0 pr-3">
+                        <p
+                          className="text-base sm:text-lg md:text-xl font-medium text-white mb-1"
+                          style={{ fontFamily: "var(--font-body), sans-serif" }}
+                        >
                           {displayName}
                         </p>
-                        <p className="text-xs text-slate-400">
+                        <p className="text-sm sm:text-base text-slate-400">
                           ₹{item.price} × {item.quantity}
                         </p>
                       </div>
-                      <p className="text-sm sm:text-base font-bold text-amber-400">
+                      <p className="text-lg sm:text-xl md:text-2xl font-bold text-amber-400 whitespace-nowrap">
                         ₹{(item.price * item.quantity).toFixed(2)}
                       </p>
                     </div>
                   );
                 })}
               </div>
-              <div className="mt-4 pt-4 border-t border-slate-700/50 flex items-center justify-between">
-                <span className="text-base sm:text-lg font-semibold text-white">
+              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-slate-700/50 flex items-center justify-between">
+                <span
+                  className="text-lg sm:text-xl md:text-2xl font-semibold text-white"
+                  style={{ fontFamily: "var(--font-body), sans-serif" }}
+                >
                   Total
                 </span>
-                <span className="text-xl sm:text-2xl font-bold text-emerald-400">
+                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400">
                   ₹{totalAmount.toFixed(2)}
                 </span>
               </div>
@@ -283,4 +299,3 @@ export default function CheckoutPage() {
     </div>
   );
 }
-

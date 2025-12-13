@@ -99,7 +99,10 @@ export default function Loader({
       <div className="relative text-center z-10">
         {/* Brand Name */}
         <div className="mb-6 sm:mb-8">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent drop-shadow-lg">
+          <h1 
+            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+            style={{ fontFamily: "var(--font-branding), cursive" }}
+          >
             Chinese Chekar
           </h1>
         </div>
@@ -130,7 +133,10 @@ export default function Loader({
 
         {/* Loading Text with better styling */}
         <div className="space-y-4">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent animate-pulse-slow drop-shadow-sm">
+          <h2 
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent animate-pulse-slow drop-shadow-sm"
+            style={{ fontFamily: "var(--font-body), sans-serif" }}
+          >
             {message}
           </h2>
 
@@ -149,9 +155,12 @@ export default function Loader({
         </div>
 
         {/* Enhanced hint text */}
-        <div className="mt-8 space-y-2">
-          <p className="text-slate-400 text-sm sm:text-base animate-pulse-slow font-medium">
-            Preparing your culinary experience
+        <div className="mt-8 sm:mt-10 space-y-2">
+          <p 
+            className="text-base sm:text-lg md:text-xl text-slate-300 animate-pulse-slow font-medium"
+            style={{ fontFamily: "var(--font-body), sans-serif" }}
+          >
+            Preparing your culinary experience...
           </p>
           <div className="flex items-center justify-center gap-2 opacity-40">
             <div className="h-px w-8 sm:w-12 bg-linear-to-r from-transparent to-amber-500/50"></div>
