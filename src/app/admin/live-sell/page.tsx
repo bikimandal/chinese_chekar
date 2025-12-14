@@ -370,16 +370,16 @@ export default function LiveSellPage() {
                         {/* Price & Stock in one line */}
                         <div className="flex items-center gap-4 mb-3">
                           <div>
-                            <span className="text-xl font-bold text-amber-400">
+                            <span className="text-2xl font-bold text-amber-400">
                               ₹{displayPrice}
                             </span>
                           </div>
-                          <div className="text-xs">
-                            <span className="text-slate-500 text-md lg:text-lg">
-                              Stock:{" "}
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400 text-sm sm:text-base font-medium">
+                              Stock:
                             </span>
                             <span
-                              className={`text-xl lg:text-xl sm:text-base font-semibold ${
+                              className={`text-base sm:text-lg lg:text-xl font-bold ${
                                 item.stock === 0
                                   ? "text-red-400"
                                   : item.stock <= 5
@@ -387,7 +387,10 @@ export default function LiveSellPage() {
                                   : "text-emerald-400"
                               }`}
                             >
-                              {item.stock} Plate
+                              {item.stock}
+                            </span>
+                            <span className="text-slate-300 text-xs sm:text-sm font-medium">
+                              Plate
                             </span>
                           </div>
                         </div>
