@@ -11,6 +11,7 @@ interface ItemCardProps {
   image?: string;
   category: string;
   isAvailable?: boolean;
+  isAboveFold?: boolean; // For LCP optimization
   product?: {
     hasHalfFullPlate?: boolean;
     halfPlatePrice?: number | null;
@@ -26,6 +27,7 @@ export default function ItemCard({
   image,
   category,
   isAvailable = true,
+  isAboveFold = false,
   product,
 }: ItemCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -120,7 +122,8 @@ export default function ItemCard({
               src={image}
               alt={name}
               fill
-              loading="lazy"
+              loading={isAboveFold ? "eager" : "lazy"}
+              priority={isAboveFold}
               onLoad={() => {
                 setImageLoaded(true);
               }}

@@ -3,7 +3,11 @@
 import { useState, useEffect, useRef } from "react";
 import { RefreshCw } from "lucide-react";
 
-export default function ReloadButton() {
+interface ReloadButtonProps {
+  onRefresh?: () => void;
+}
+
+export default function ReloadButton({ onRefresh }: ReloadButtonProps) {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -26,8 +30,13 @@ export default function ReloadButton() {
     setIsRefreshing(true);
 
     try {
-      // Dispatch custom event to trigger refresh in InventoryClient
-      window.dispatchEvent(new CustomEvent("inventory-refresh"));
+      // Call the onRefresh callback if provided, otherwise dispatch custom event
+      if (onRefresh) {
+        onRefresh();
+      } else {
+        // Fallback to event system for backward compatibility
+        window.dispatchEvent(new CustomEvent("inventory-refresh"));
+      }
       
       // Wait a bit for the refresh to complete
       await new Promise((resolve) => setTimeout(resolve, 500));
