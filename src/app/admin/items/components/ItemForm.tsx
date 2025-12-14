@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Save, X, Loader2 } from "lucide-react";
 import Link from "next/link";
+import Loader from "@/components/Loader";
 
 interface Product {
   id: string;
