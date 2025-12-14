@@ -77,9 +77,67 @@ export async function DELETE(
   try {
     const { id } = await params;
     
+    // Get item to find image path before deleting
+    const item = await prisma.item.findUnique({
+      where: { id },
+      include: {
+        product: {
+          select: { image: true },
+        },
+      },
+    });
+
+    if (!item) {
+      return NextResponse.json(
+        { error: "Item not found" },
+        { status: 404 }
+      );
+    }
+
+    // Delete from database first
     await prisma.item.delete({
       where: { id },
     });
+
+    // Delete image from Supabase Storage if it exists and is not shared with product
+    // Only delete if item has its own image that's different from product image
+    if (item.image) {
+      // Check if this is the item's own image (not shared from product)
+      const isOwnImage = !item.productId || item.image !== item.product?.image;
+      
+      if (isOwnImage) {
+        try {
+          const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+          const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+          if (supabaseUrl && supabaseKey) {
+            const { createClient } = await import("@supabase/supabase-js");
+            const supabase = createClient(supabaseUrl, supabaseKey);
+
+            // Extract file path from URL
+            // URL format: https://[project].supabase.co/storage/v1/object/public/product-images/products/[filename]
+            const urlMatch = item.image.match(/product-images\/(.+)$/);
+            if (urlMatch && urlMatch[1]) {
+              const filePath = urlMatch[1];
+              
+              const { error: storageError } = await supabase.storage
+                .from("product-images")
+                .remove([filePath]);
+
+              if (storageError) {
+                console.error("Error deleting image from storage:", storageError);
+                // Don't fail the request if storage deletion fails
+                // The database record is already deleted
+              }
+            }
+          }
+        } catch (storageError) {
+          console.error("Error deleting image from storage:", storageError);
+          // Don't fail the request if storage deletion fails
+          // The database record is already deleted
+        }
+      }
+    }
 
     return NextResponse.json({ message: "Item deleted successfully" });
   } catch (error: any) {

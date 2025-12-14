@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Loader from "@/components/Loader";
 import { Item, Category } from "./types";
@@ -17,6 +17,7 @@ export default function AdminPage() {
   const [items, setItems] = useState<Item[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [togglingItemId, setTogglingItemId] = useState<string | null>(null);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
 
@@ -89,7 +90,8 @@ export default function AdminPage() {
     }
   };
 
-  const fetchItems = async () => {
+  // Optimized: Memoize fetch functions to prevent unnecessary re-renders
+  const fetchItems = useCallback(async () => {
     setIsLoadingItems(true);
     try {
       const response = await fetch("/api/items?admin=true");
@@ -115,9 +117,9 @@ export default function AdminPage() {
     } finally {
       setIsLoadingItems(false);
     }
-  };
+  }, []);
 
-  const fetchCategories = async () => {
+  const fetchCategories = useCallback(async () => {
     try {
       const response = await fetch("/api/categories");
       const data = await response.json();
@@ -125,11 +127,12 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error fetching categories:", error);
     }
-  };
+  }, []);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
 
+    setDeletingItemId(id);
     try {
       const response = await fetch(`/api/items/${id}`, {
         method: "DELETE",
@@ -144,6 +147,8 @@ export default function AdminPage() {
     } catch (error) {
       console.error("Error deleting item:", error);
       alert("An error occurred while deleting the item");
+    } finally {
+      setDeletingItemId(null);
     }
   };
 
@@ -193,6 +198,20 @@ export default function AdminPage() {
     }
   };
 
+  // Optimized: Use useMemo to avoid recalculating on every render
+  // Must be called before any conditional returns (Rules of Hooks)
+  const { totalItems, lowStock, outOfStock } = useMemo(() => {
+    if (!Array.isArray(items)) {
+      return { totalItems: 0, lowStock: 0, outOfStock: 0 };
+    }
+    return {
+      totalItems: items.length,
+      lowStock: items.filter((item) => item.stock > 0 && item.stock <= 5)
+        .length,
+      outOfStock: items.filter((item) => item.stock === 0).length,
+    };
+  }, [items]);
+
   // Show loading state while checking authentication
   if (isCheckingAuth) {
     return <Loader message="Checking authentication..." />;
@@ -202,14 +221,6 @@ export default function AdminPage() {
   if (!isAuthenticated) {
     return null;
   }
-
-  const totalItems = Array.isArray(items) ? items.length : 0;
-  const lowStock = Array.isArray(items)
-    ? items.filter((item) => item.stock > 0 && item.stock <= 5).length
-    : 0;
-  const outOfStock = Array.isArray(items)
-    ? items.filter((item) => item.stock === 0).length
-    : 0;
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
@@ -232,6 +243,7 @@ export default function AdminPage() {
             <ItemsTable
               items={items}
               togglingItemId={togglingItemId}
+              deletingItemId={deletingItemId}
               onDelete={handleDelete}
               onToggleAvailability={handleToggleAvailability}
             />

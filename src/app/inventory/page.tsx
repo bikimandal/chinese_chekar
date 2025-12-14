@@ -22,22 +22,23 @@ export default async function InventoryPage() {
     return <ShopClosed message={storeStatus.message || undefined} />;
   }
 
-  // If store is open, show inventory
-  const items = await prisma.item.findMany({
-    where: {
-      isVisible: true,
-    },
-    include: {
-      product: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  });
-
-  const categories = await prisma.category.findMany({
-    where: { isActive: true },
-  });
+  // Optimized: Run queries in parallel instead of sequential
+  const [items, categories] = await Promise.all([
+    prisma.item.findMany({
+      where: {
+        isVisible: true,
+      },
+      include: {
+        product: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    }),
+    prisma.category.findMany({
+      where: { isActive: true },
+    }),
+  ]);
 
   return (
     <div className="min-h-screen bg-dark-bg p-3 sm:p-4 md:p-6 lg:p-8">

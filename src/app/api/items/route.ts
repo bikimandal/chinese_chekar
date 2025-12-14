@@ -56,11 +56,12 @@ export async function POST(request: Request) {
     const body = await request.json();
     const { name, description, price, stock, productId, isAvailable, isVisible } = body;
 
-    // Get product to use its image if available
+    // Optimized: Only fetch image field if productId exists
     let image = null;
     if (productId) {
       const product = await prisma.product.findUnique({
         where: { id: productId },
+        select: { image: true }, // Only select image field
       });
       if (product?.image) {
         image = product.image;

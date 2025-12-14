@@ -143,21 +143,31 @@ export async function POST(request: Request) {
       },
     });
 
-    // Update stock for each item
-    for (const item of items) {
-      const currentItem = await prisma.item.findUnique({
-        where: { id: item.itemId },
-      });
-      
-      if (currentItem) {
-        await prisma.item.update({
+    // Optimized: Batch stock updates instead of N+1 queries
+    // First, fetch all items in one query
+    const itemIds = items.map((item: any) => item.itemId);
+    const currentItems = await prisma.item.findMany({
+      where: { id: { in: itemIds } },
+      select: { id: true, stock: true },
+    });
+
+    // Create a map for quick lookup
+    const itemStockMap = new Map(
+      currentItems.map((item) => [item.id, item.stock])
+    );
+
+    // Batch all updates using Promise.all
+    await Promise.all(
+      items.map((item: any) => {
+        const currentStock = itemStockMap.get(item.itemId) ?? 0;
+        return prisma.item.update({
           where: { id: item.itemId },
           data: {
-            stock: Math.max(0, currentItem.stock - item.quantity),
+            stock: Math.max(0, currentStock - item.quantity),
           },
         });
-      }
-    }
+      })
+    );
 
     return NextResponse.json(sale, { status: 201 });
   } catch (error: any) {
@@ -217,17 +227,14 @@ export async function GET(request: Request) {
       where: whereClause,
     });
 
-    // Calculate total revenue across all sales (not just current page)
-    const allSalesForTotal = await prisma.sale.findMany({
+    // Optimized: Use aggregation query instead of fetching all records
+    const revenueResult = await prisma.sale.aggregate({
       where: whereClause,
-      select: {
+      _sum: {
         totalAmount: true,
       },
     });
-    const totalRevenue = allSalesForTotal.reduce(
-      (sum, sale) => sum + sale.totalAmount,
-      0
-    );
+    const totalRevenue = revenueResult._sum.totalAmount ?? 0;
 
     return NextResponse.json({
       sales,
