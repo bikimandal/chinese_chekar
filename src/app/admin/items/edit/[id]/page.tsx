@@ -111,13 +111,19 @@ export default function EditItemPage() {
       setFormData({
         name: item.name,
         description: item.description || "",
-        price: item.price.toString(),
+        // When segregation is disabled, use fullPlatePrice as the single price
+        // When enabled, clear price field (will use halfPlatePrice and fullPlatePrice)
+        price: !hasHalfFull && product?.fullPlatePrice
+          ? product.fullPlatePrice.toString()
+          : !hasHalfFull
+          ? item.price.toString()
+          : "",
+        // Only populate halfPlatePrice when segregation is enabled
         halfPlatePrice: hasHalfFull && product?.halfPlatePrice
           ? product.halfPlatePrice.toString()
           : "",
-        fullPlatePrice: hasHalfFull && product?.fullPlatePrice
-          ? product.fullPlatePrice.toString()
-          : product?.fullPlatePrice
+        // Always populate fullPlatePrice if it exists
+        fullPlatePrice: product?.fullPlatePrice
           ? product.fullPlatePrice.toString()
           : "",
         stock: item.stock.toString(),
@@ -146,18 +152,19 @@ export default function EditItemPage() {
           name: selectedProduct.name,
           description: selectedProduct.description || "",
           hasHalfFullPlate: hasHalfFull,
-          // If product has half/full plate, populate both prices
+          // If product has half/full plate, populate both prices and clear single price
           halfPlatePrice: hasHalfFull && selectedProduct.halfPlatePrice
             ? selectedProduct.halfPlatePrice.toString()
             : "",
-          fullPlatePrice: hasHalfFull && selectedProduct.fullPlatePrice
-            ? selectedProduct.fullPlatePrice.toString()
-            : selectedProduct.fullPlatePrice
+          fullPlatePrice: selectedProduct.fullPlatePrice
             ? selectedProduct.fullPlatePrice.toString()
             : "",
           // If product doesn't have half/full plate, use fullPlatePrice as single price
+          // Clear price field when switching to half/full plate mode
           price: !hasHalfFull && selectedProduct.fullPlatePrice
             ? selectedProduct.fullPlatePrice.toString()
+            : hasHalfFull
+            ? ""
             : prev.price,
         }));
       }

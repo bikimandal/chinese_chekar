@@ -17,6 +17,35 @@ export default function ItemsTable({
   onDelete,
   onToggleAvailability,
 }: ItemsTableProps) {
+  // Helper function to render price display
+  // Shows both half and full plate prices when segregation is enabled
+  const renderPrice = (item: Item) => {
+    const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
+
+    // When segregation is disabled, show only full plate price
+    if (!hasHalfFull) {
+      const price = item.product?.fullPlatePrice ?? item.price;
+      return <span className="text-amber-400 font-semibold">₹{price}</span>;
+    }
+
+    // When segregation is enabled, show both prices
+    const halfPrice = item.product?.halfPlatePrice ?? 0;
+    const fullPrice = item.product?.fullPlatePrice ?? item.price;
+
+    return (
+      <div className="flex flex-col gap-1">
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400">Half:</span>
+          <span className="text-amber-400 font-semibold">₹{halfPrice}</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-slate-400">Full:</span>
+          <span className="text-amber-400 font-semibold">₹{fullPrice}</span>
+        </div>
+      </div>
+    );
+  };
+
   return (
     <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
       <div className="p-4 sm:p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-700/50">
@@ -102,8 +131,8 @@ export default function ItemsTable({
                       </span>
                     )}
                   </td>
-                  <td className="px-4 lg:px-6 py-3 lg:py-4 text-amber-400 font-semibold text-sm sm:text-base">
-                    ₹{item.price}
+                  <td className="px-4 lg:px-6 py-3 lg:py-4 text-sm sm:text-base">
+                    {renderPrice(item)}
                   </td>
                   <td className="px-4 lg:px-6 py-3 lg:py-4 text-white text-sm sm:text-base">
                     {item.stock}
@@ -192,9 +221,36 @@ export default function ItemsTable({
               <div className="grid grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <p className="text-xs text-slate-500 mb-1">Price</p>
-                  <p className="text-lg sm:text-xl font-bold text-amber-400">
-                    ₹{item.price}
-                  </p>
+                  <div className="text-lg sm:text-xl font-bold">
+                    {(() => {
+                      const hasHalfFull =
+                        item.product?.hasHalfFullPlate ?? false;
+                      if (!hasHalfFull) {
+                        const price =
+                          item.product?.fullPlatePrice ?? item.price;
+                        return <span className="text-amber-400">₹{price}</span>;
+                      }
+                      const halfPrice = item.product?.halfPlatePrice ?? 0;
+                      const fullPrice =
+                        item.product?.fullPlatePrice ?? item.price;
+                      return (
+                        <div className="flex flex-col gap-1">
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-slate-400 font-normal">
+                              Half:
+                            </span>
+                            <span className="text-amber-400">₹{halfPrice}</span>
+                          </div>
+                          <div className="flex items-center gap-1.5">
+                            <span className="text-xs text-slate-400 font-normal">
+                              Full:
+                            </span>
+                            <span className="text-amber-400">₹{fullPrice}</span>
+                          </div>
+                        </div>
+                      );
+                    })()}
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs text-slate-500 mb-1">Stock</p>
