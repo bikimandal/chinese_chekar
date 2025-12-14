@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { ArrowLeft, Plus, Edit2, Trash2 } from "lucide-react";
+import { ArrowLeft, Plus, Edit2, Trash2, Loader2 } from "lucide-react";
 import Loader from "@/components/Loader";
 import BackButton from "../components/BackButton";
 import ProductTemplatesSkeleton from "@/components/skeletons/ProductTemplatesSkeleton";
@@ -22,6 +22,7 @@ export default function AdminControlsPage() {
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoadingProducts, setIsLoadingProducts] = useState(false);
+  const [deletingProductId, setDeletingProductId] = useState<string | null>(null);
 
   useEffect(() => {
     checkSession();
@@ -88,6 +89,7 @@ export default function AdminControlsPage() {
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this product?")) return;
 
+    setDeletingProductId(id);
     try {
       const response = await fetch(`/api/products/${id}`, {
         method: "DELETE",
@@ -102,6 +104,8 @@ export default function AdminControlsPage() {
     } catch (error) {
       console.error("Error deleting product:", error);
       alert("An error occurred while deleting the product");
+    } finally {
+      setDeletingProductId(null);
     }
   };
 
@@ -216,10 +220,15 @@ export default function AdminControlsPage() {
                       </Link>
                       <button
                         onClick={() => handleDelete(product.id)}
-                        className="px-3 sm:px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 rounded-lg transition-all"
-                        title="Delete"
+                        disabled={deletingProductId === product.id}
+                        className="px-3 sm:px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                        title={deletingProductId === product.id ? "Deleting..." : "Delete"}
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingProductId === product.id ? (
+                          <Loader2 className="w-4 h-4 animate-spin" />
+                        ) : (
+                          <Trash2 className="w-4 h-4" />
+                        )}
                       </button>
                     </div>
                   </div>

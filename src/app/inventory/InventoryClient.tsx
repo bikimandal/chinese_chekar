@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import ItemCard from "@/components/ItemCard";
@@ -37,8 +37,8 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
   const [isRealtimeConnected, setIsRealtimeConnected] = useState(false);
   const [updatingItems, setUpdatingItems] = useState<Set<string>>(new Set());
 
-  // Handle refresh (full reload - used by reload button)
-  const refreshData = async () => {
+  // Optimized: Memoize refresh function
+  const refreshData = useCallback(async () => {
     setIsLoading(true);
     try {
       // Fetch fresh data (public items only)
@@ -66,10 +66,10 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
         setIsLoading(false);
       }, 500);
     }
-  };
+  }, [router]);
 
-  // Optimized: Handle individual item changes from real-time updates
-  const handleItemChange = async (payload: any) => {
+  // Optimized: Memoize handleItemChange function
+  const handleItemChange = useCallback(async (payload: any) => {
     const { eventType, new: newRecord, old: oldRecord } = payload;
     const itemId = newRecord?.id || oldRecord?.id;
 
@@ -168,7 +168,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
       // Fallback to full refresh on error
       refreshData();
     }
-  };
+  }, [refreshData]);
 
   // Listen for refresh event from ReloadButton - Commented out, using real-time updates instead
   // useEffect(() => {
@@ -238,8 +238,8 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
     return <InventoryItemsSkeleton count={skeletonCount} />;
   }
 
-  // Create item variants with alternating entrance directions - refined and optimized
-  const getItemVariants = (index: number) => {
+  // Optimized: Memoize item variants function
+  const getItemVariants = useCallback((index: number) => {
     const isEven = index % 2 === 0;
     return {
       hidden: {
@@ -273,7 +273,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
         },
       },
     };
-  };
+  }, []);
 
   return (
     <>

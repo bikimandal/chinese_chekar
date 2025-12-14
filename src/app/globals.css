@@ -28,6 +28,15 @@
   --foreground: #FFFFFF;
 }
 
+/* Disable zooming on mobile devices */
+html {
+  touch-action: pan-x pan-y;
+  -ms-touch-action: pan-x pan-y;
+  -webkit-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
 body {
   background-color: var(--background);
   color: var(--foreground);
@@ -36,6 +45,28 @@ body {
   font-weight: 400;
   letter-spacing: 0.01em;
   line-height: 1.6;
+  touch-action: pan-x pan-y;
+  -ms-touch-action: pan-x pan-y;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Allow text selection for input fields and text areas */
+input,
+textarea,
+[contenteditable],
+select {
+  -webkit-user-select: text !important;
+  -moz-user-select: text !important;
+  -ms-user-select: text !important;
+  user-select: text !important;
+  -webkit-tap-highlight-color: rgba(0, 0, 0, 0.1);
+}
+
+/* Prevent double-tap zoom on interactive elements */
+button,
+a,
+[role="button"] {
+  touch-action: manipulation;
 }
 
 h1, h2, h3, h4, h5, h6 {

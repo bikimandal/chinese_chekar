@@ -1,5 +1,5 @@
 import Image from "next/image";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Sparkles, TrendingUp, AlertCircle } from "lucide-react";
 
 interface ItemCardProps {
@@ -33,15 +33,21 @@ export default function ItemCard({
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
 
-  // Determine display price and full plate price
+  // Optimized: Memoize price calculations
   const hasHalfFull = product?.hasHalfFullPlate ?? false;
-  const displayPrice =
-    hasHalfFull && product?.halfPlatePrice
-      ? product.halfPlatePrice
-      : product?.fullPlatePrice ?? price;
-  const fullPlatePrice =
-    hasHalfFull && product?.fullPlatePrice ? product.fullPlatePrice : null;
-  const getStockStatus = () => {
+  const { displayPrice, fullPlatePrice } = useMemo(() => {
+    return {
+      displayPrice:
+        hasHalfFull && product?.halfPlatePrice
+          ? product.halfPlatePrice
+          : product?.fullPlatePrice ?? price,
+      fullPlatePrice:
+        hasHalfFull && product?.fullPlatePrice ? product.fullPlatePrice : null,
+    };
+  }, [hasHalfFull, product?.halfPlatePrice, product?.fullPlatePrice, price]);
+
+  // Optimized: Memoize stock status calculation
+  const status = useMemo(() => {
     if (!isAvailable) {
       return {
         text: "Not Available",
@@ -80,9 +86,8 @@ export default function ItemCard({
         icon: Sparkles,
       };
     }
-  };
+  }, [isAvailable, stock]);
 
-  const status = getStockStatus();
   const StatusIcon = status.icon;
 
   // Determine if item is disabled or out of stock

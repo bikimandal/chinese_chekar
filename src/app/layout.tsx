@@ -4,6 +4,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TopProgressBar from "@/components/TopProgressBar";
+import DisableZoom from "@/components/DisableZoom";
 
 // Elegant serif font for headings - refined and professional
 const cormorant = Cormorant({
@@ -43,6 +44,14 @@ export const metadata: Metadata = {
   description: "Experience authentic Chinese cuisine. Check our live inventory for daily specials.",
 };
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: "cover",
+};
+
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -53,6 +62,7 @@ export default function RootLayout({
       <body
         className={`${cormorant.variable} ${inter.variable} ${dancingScript.variable} ${cinzel.variable} antialiased bg-dark-bg text-text-main flex flex-col min-h-screen`}
       >
+        <DisableZoom />
         <Navbar />
         <TopProgressBar />
         <main className="grow pt-16 sm:pt-20">{children}</main>

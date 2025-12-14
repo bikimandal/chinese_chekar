@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Save, X } from "lucide-react";
+import { Save, X, Loader2 } from "lucide-react";
 import Link from "next/link";
-import Loader from "@/components/Loader";
 
 interface Product {
   id: string;
@@ -332,6 +331,8 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
       });
 
       if (response.ok) {
+        // Wait a brief moment to ensure DB save is complete before redirecting
+        await new Promise((resolve) => setTimeout(resolve, 300));
         router.push("/admin");
       } else {
         const data = await response.json();
@@ -339,13 +340,13 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
           data.error ||
             `Failed to ${mode === "edit" ? "update" : "create"} item. Please try again.`
         );
+        setLoading(false);
       }
     } catch (error) {
       console.error(`Error ${mode === "edit" ? "updating" : "creating"} item:`, error);
       setError(
         `An error occurred while ${mode === "edit" ? "updating" : "creating"} the item. Please try again.`
       );
-    } finally {
       setLoading(false);
     }
   };
@@ -367,15 +368,6 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
         </div>
       )}
 
-      {loading && (
-        <div className="mb-6">
-          <Loader
-            message={
-              mode === "edit" ? "Saving changes..." : "Saving item..."
-            }
-          />
-        </div>
-      )}
 
       <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
         {/* Product Selection - At the top */}
@@ -613,7 +605,11 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
             disabled={loading}
             className="flex-1 flex items-center justify-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-xl hover:from-amber-500 hover:to-orange-500 transition-all duration-300 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/30 text-sm sm:text-base"
           >
-            <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+            {loading ? (
+              <Loader2 className="w-4 h-4 sm:w-5 sm:h-5 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 sm:w-5 sm:h-5" />
+            )}
             {loading
               ? "Saving..."
               : mode === "edit"

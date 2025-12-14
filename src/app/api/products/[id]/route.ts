@@ -46,6 +46,9 @@ export async function PUT(
       );
     }
 
+    // Optimized: Get old name first, then update
+    const newName = name.trim();
+    
     // Get the old product name before updating
     const oldProduct = await prisma.product.findUnique({
       where: { id },
@@ -59,7 +62,6 @@ export async function PUT(
       );
     }
 
-    const newName = name.trim();
     const oldName = oldProduct.name;
 
     // Update the product
@@ -98,14 +100,16 @@ export async function PUT(
             `✅ Updated ${updateResult.count} item(s) with product name change from "${oldName}" to "${newName}"`
           );
         } else {
-          // Log for debugging - check if items exist but names don't match
-          const itemsCheck = await prisma.item.findMany({
-            where: { productId: id },
-            select: { id: true, name: true },
-          });
-          console.log(
-            `⚠️ No items updated. Found ${itemsCheck.length} item(s) using this product. Item names: ${itemsCheck.map((i) => `"${i.name}"`).join(", ")}. Old product name was: "${oldName}"`
-          );
+          // Optimized: Only fetch items for logging in development mode
+          if (process.env.NODE_ENV === "development") {
+            const itemsCheck = await prisma.item.findMany({
+              where: { productId: id },
+              select: { id: true, name: true },
+            });
+            console.log(
+              `⚠️ No items updated. Found ${itemsCheck.length} item(s) using this product. Item names: ${itemsCheck.map((i) => `"${i.name}"`).join(", ")}. Old product name was: "${oldName}"`
+            );
+          }
         }
       } catch (error) {
         console.error("❌ Error updating items with product name change:", error);
@@ -113,7 +117,7 @@ export async function PUT(
       }
     }
 
-    return NextResponse.json(product);
+      return NextResponse.json(product);
   } catch (error: any) {
     console.error("Error updating product:", error);
 

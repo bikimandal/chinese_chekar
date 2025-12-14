@@ -33,44 +33,44 @@ export default function Loader({
   }, []);
   const sizeClasses = {
     sm: {
-      container: "h-14 w-14",
-      icon: "h-6 w-6",
-      ring: "h-16 w-16",
-      outerRing: "h-20 w-20",
+      container: "h-12 w-12 sm:h-14 sm:w-14",
+      icon: "h-5 w-5 sm:h-6 sm:w-6",
+      ring: "h-14 w-14 sm:h-16 sm:w-16",
+      outerRing: "h-16 w-16 sm:h-20 sm:w-20",
       dot: "w-1.5 h-1.5",
-      glow: "h-20 w-20",
+      glow: "h-16 w-16 sm:h-20 sm:w-20",
     },
     md: {
-      container: "h-20 w-20",
-      icon: "h-9 w-9",
-      ring: "h-24 w-24",
-      outerRing: "h-32 w-32",
+      container: "h-16 w-16 sm:h-20 sm:w-20",
+      icon: "h-7 w-7 sm:h-9 sm:w-9",
+      ring: "h-20 w-20 sm:h-24 sm:w-24",
+      outerRing: "h-28 w-28 sm:h-32 sm:w-32",
       dot: "w-2 h-2",
-      glow: "h-32 w-32",
+      glow: "h-28 w-28 sm:h-32 sm:w-32",
     },
     lg: {
-      container: "h-28 w-28",
-      icon: "h-12 w-12",
-      ring: "h-32 w-32",
-      outerRing: "h-44 w-44",
-      dot: "w-3 h-3",
-      glow: "h-44 w-44",
+      container: "h-20 w-20 sm:h-24 sm:w-24 md:h-28 md:w-28",
+      icon: "h-9 w-9 sm:h-10 sm:w-10 md:h-12 md:w-12",
+      ring: "h-24 w-24 sm:h-28 sm:w-28 md:h-32 md:w-32",
+      outerRing: "h-36 w-36 sm:h-40 sm:w-40 md:h-44 md:w-44",
+      dot: "w-2.5 h-2.5 sm:w-3 sm:h-3",
+      glow: "h-36 w-36 sm:h-40 sm:w-40 md:h-44 md:w-44",
     },
   };
 
   const currentSize = sizeClasses[size];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden">
+    <div className="h-screen w-screen flex items-center justify-center bg-linear-to-br from-slate-950 via-slate-900 to-slate-950 relative overflow-hidden fixed inset-0">
       {/* Enhanced Animated Background */}
       <div className="absolute inset-0 opacity-20">
-        <div className="absolute top-1/4 left-1/4 w-72 h-72 sm:w-96 sm:h-96 bg-amber-500 rounded-full blur-3xl animate-pulse-slow"></div>
+        <div className="absolute top-1/4 left-1/4 w-48 h-48 sm:w-72 sm:h-72 md:w-96 md:h-96 bg-amber-500 rounded-full blur-3xl animate-pulse-slow"></div>
         <div
-          className="absolute bottom-1/3 right-1/3 w-64 h-64 sm:w-80 sm:h-80 bg-orange-600 rounded-full blur-3xl animate-pulse-slow"
+          className="absolute bottom-1/3 right-1/3 w-40 h-40 sm:w-64 sm:h-64 md:w-80 md:h-80 bg-orange-600 rounded-full blur-3xl animate-pulse-slow"
           style={{ animationDelay: "1.5s" }}
         ></div>
         <div
-          className="absolute top-1/2 right-1/4 w-56 h-56 sm:w-72 sm:h-72 bg-amber-600 rounded-full blur-3xl animate-pulse-slow"
+          className="absolute top-1/2 right-1/4 w-36 h-36 sm:w-56 sm:h-56 md:w-72 md:h-72 bg-amber-600 rounded-full blur-3xl animate-pulse-slow"
           style={{ animationDelay: "3s" }}
         ></div>
       </div>
@@ -89,18 +89,18 @@ export default function Loader({
             }}
           >
             <Sparkles
-              className="w-3 h-3 sm:w-4 sm:h-4 text-amber-400 opacity-30"
+              className="w-2 h-2 sm:w-3 sm:h-3 md:w-4 md:h-4 text-amber-400 opacity-30"
               fill="currentColor"
             />
           </div>
         ))}
       </div>
 
-      <div className="relative text-center z-10">
+      <div className="relative text-center z-10 px-4 w-full max-w-4xl flex flex-col items-center justify-center h-full py-4 sm:py-6 md:py-8">
         {/* Brand Name */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-3 sm:mb-4 md:mb-6">
           <h1 
-            className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent drop-shadow-lg tracking-wide"
+            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent drop-shadow-lg tracking-wide leading-tight"
             style={{ fontFamily: "var(--font-branding), cursive" }}
           >
             Chinese Chekar
@@ -108,7 +108,7 @@ export default function Loader({
         </div>
 
         {/* Multi-layered Loader Animation */}
-        <div className="relative inline-flex items-center justify-center mb-8 sm:mb-10">
+        <div className="relative inline-flex items-center justify-center mb-4 sm:mb-6 md:mb-8">
           {/* Pulsing background glow */}
           <div className={`absolute ${currentSize.glow}`}>
             <div className="w-full h-full bg-linear-to-br from-amber-500/30 to-orange-600/30 rounded-full blur-2xl animate-pulse-glow"></div>
@@ -132,40 +132,40 @@ export default function Loader({
         </div>
 
         {/* Loading Text with better styling */}
-        <div className="space-y-4">
+        <div className="space-y-2 sm:space-y-3 md:space-y-4">
           <h2 
-            className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent animate-pulse-slow drop-shadow-sm"
+            className="text-lg sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl font-bold bg-linear-to-r from-amber-300 via-amber-400 to-orange-400 bg-clip-text text-transparent animate-pulse-slow drop-shadow-sm leading-tight"
             style={{ fontFamily: "var(--font-body), sans-serif" }}
           >
             {message}
           </h2>
 
           {/* Enhanced animated dots */}
-          <div className="flex justify-center gap-2">
-            <div className="w-2.5 h-2.5 bg-linear-to-r from-amber-400 to-amber-500 rounded-full animate-bounce-smooth shadow-lg shadow-amber-400/50"></div>
+          <div className="flex justify-center gap-1.5 sm:gap-2">
+            <div className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-linear-to-r from-amber-400 to-amber-500 rounded-full animate-bounce-smooth shadow-lg shadow-amber-400/50"></div>
             <div
-              className="w-2.5 h-2.5 bg-linear-to-r from-amber-500 to-orange-500 rounded-full animate-bounce-smooth shadow-lg shadow-orange-400/50"
+              className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-linear-to-r from-amber-500 to-orange-500 rounded-full animate-bounce-smooth shadow-lg shadow-orange-400/50"
               style={{ animationDelay: "0.15s" }}
             ></div>
             <div
-              className="w-2.5 h-2.5 bg-linear-to-r from-orange-400 to-orange-500 rounded-full animate-bounce-smooth shadow-lg shadow-orange-400/50"
+              className="w-2 h-2 sm:w-2.5 sm:h-2.5 bg-linear-to-r from-orange-400 to-orange-500 rounded-full animate-bounce-smooth shadow-lg shadow-orange-400/50"
               style={{ animationDelay: "0.3s" }}
             ></div>
           </div>
         </div>
 
-        {/* Enhanced hint text */}
-        <div className="mt-8 sm:mt-10 space-y-2">
+        {/* Enhanced hint text - Hidden on very small screens, shown on larger */}
+        <div className="mt-3 sm:mt-4 md:mt-6 lg:mt-8 space-y-1 sm:space-y-2">
           <p 
-            className="text-base sm:text-lg md:text-xl text-slate-300 animate-pulse-slow font-medium"
+            className="text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl text-slate-300 animate-pulse-slow font-medium"
             style={{ fontFamily: "var(--font-body), sans-serif" }}
           >
             Preparing your culinary experience...
           </p>
-          <div className="flex items-center justify-center gap-2 opacity-40">
-            <div className="h-px w-8 sm:w-12 bg-linear-to-r from-transparent to-amber-500/50"></div>
-            <div className="w-1 h-1 rounded-full bg-amber-500"></div>
-            <div className="h-px w-8 sm:w-12 bg-linear-to-l from-transparent to-amber-500/50"></div>
+          <div className="flex items-center justify-center gap-1.5 sm:gap-2 opacity-40">
+            <div className="h-px w-6 sm:w-8 md:w-12 bg-linear-to-r from-transparent to-amber-500/50"></div>
+            <div className="w-0.5 h-0.5 sm:w-1 sm:h-1 rounded-full bg-amber-500"></div>
+            <div className="h-px w-6 sm:w-8 md:w-12 bg-linear-to-l from-transparent to-amber-500/50"></div>
           </div>
         </div>
       </div>
