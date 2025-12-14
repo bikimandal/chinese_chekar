@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowLeft, Plus, Edit2, Trash2 } from "lucide-react";
 import Loader from "@/components/Loader";
 import BackButton from "../components/BackButton";
@@ -179,11 +180,15 @@ export default function AdminControlsPage() {
                     className="bg-slate-900/50 border border-slate-700/50 rounded-xl p-4 sm:p-6 hover:border-amber-500/50 transition-all"
                   >
                     {product.image && (
-                      <div className="mb-3 sm:mb-4">
-                        <img
+                      <div className="mb-3 sm:mb-4 relative w-full h-40 sm:h-48 rounded-lg overflow-hidden bg-slate-800/50">
+                        <Image
                           src={product.image}
                           alt={product.name}
-                          className="w-full h-40 sm:h-48 object-cover rounded-lg"
+                          fill
+                          className="object-cover"
+                          quality={60}
+                          loading="lazy"
+                          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
                           onError={(e) => {
                             e.currentTarget.style.display = "none";
                           }}

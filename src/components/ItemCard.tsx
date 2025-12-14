@@ -11,6 +11,7 @@ interface ItemCardProps {
   image?: string;
   category: string;
   isAvailable?: boolean;
+  isAboveFold?: boolean; // For LCP optimization
   product?: {
     hasHalfFullPlate?: boolean;
     halfPlatePrice?: number | null;
@@ -26,6 +27,7 @@ export default function ItemCard({
   image,
   category,
   isAvailable = true,
+  isAboveFold = false,
   product,
 }: ItemCardProps) {
   const [imageLoaded, setImageLoaded] = useState(false);
@@ -120,7 +122,8 @@ export default function ItemCard({
               src={image}
               alt={name}
               fill
-              loading="lazy"
+              loading={isAboveFold ? "eager" : "lazy"}
+              priority={isAboveFold}
               onLoad={() => {
                 setImageLoaded(true);
               }}
@@ -138,7 +141,7 @@ export default function ItemCard({
                   : "group-hover:scale-110 group-hover:rotate-1 transition-transform duration-700"
               }`}
               sizes="(max-width: 640px) 128px, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, 25vw"
-              quality={85}
+              quality={60}
             />
             {/* Multiple gradient overlays for depth */}
             <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/40 to-transparent"></div>

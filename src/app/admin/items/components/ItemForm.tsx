@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Save, X } from "lucide-react";
 import Link from "next/link";
@@ -52,6 +52,8 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
   const [error, setError] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
   const [existingItems, setExistingItems] = useState<any[]>([]);
+  // Track the last product name we used to populate the Item Name field
+  const lastSyncedProductNameRef = useRef<string>("");
 
   const [formData, setFormData] = useState<ItemFormData>({
     name: "",
@@ -126,6 +128,15 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
     const product = item.product;
     const hasHalfFull = product?.hasHalfFullPlate ?? false;
 
+    // If item name matches product name, track it as synced
+    if (product && item.name === product.name) {
+      lastSyncedProductNameRef.current = product.name;
+    } else if (product) {
+      // If item name doesn't match product name, check if it matches any product name
+      // This handles the case where product was updated but item wasn't
+      lastSyncedProductNameRef.current = "";
+    }
+
     setFormData({
       name: item.name,
       description: item.description || "",
@@ -156,7 +167,7 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
         })
       : products;
 
-  // Update form when product is selected
+  // Update form when product is selected or product data changes
   useEffect(() => {
     if (formData.productId && products.length > 0) {
       const selectedProduct = products.find(
@@ -164,28 +175,92 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
       );
       if (selectedProduct) {
         const hasHalfFull = selectedProduct.hasHalfFullPlate ?? false;
-        setFormData((prev) => ({
-          ...prev,
-          name: selectedProduct.name,
-          description: selectedProduct.description || "",
-          hasHalfFullPlate: hasHalfFull,
-          halfPlatePrice:
-            hasHalfFull && selectedProduct.halfPlatePrice
-              ? selectedProduct.halfPlatePrice.toString()
-              : "",
-          fullPlatePrice: selectedProduct.fullPlatePrice
-            ? selectedProduct.fullPlatePrice.toString()
-            : "",
-          price:
-            !hasHalfFull && selectedProduct.fullPlatePrice
+        setFormData((prev) => {
+          // In edit mode: Check if item name was synced with product name
+          // If the current item name matches what we tracked as the synced name,
+          // or if it matches the product name, update it
+          let shouldUpdateName = false;
+          
+          if (mode === "edit") {
+            // If item name matches the last synced product name, it means it was synced
+            if (prev.name === lastSyncedProductNameRef.current && lastSyncedProductNameRef.current !== "") {
+              shouldUpdateName = true;
+            }
+            // If item name matches the current product name, it's already synced
+            else if (prev.name === selectedProduct.name) {
+              shouldUpdateName = true;
+            }
+            // If we don't have a tracked synced name, check if item name matches product name
+            // This handles the case where product was updated via API
+            else if (lastSyncedProductNameRef.current === "" && prev.name !== "" && prev.name === selectedProduct.name) {
+              shouldUpdateName = true;
+            }
+          } else {
+            // In new mode: always update if empty or matches product name
+            shouldUpdateName =
+              prev.name === "" ||
+              prev.name === lastSyncedProductNameRef.current ||
+              prev.name === selectedProduct.name;
+          }
+
+          // Update the ref if we're updating the name
+          if (shouldUpdateName) {
+            lastSyncedProductNameRef.current = selectedProduct.name;
+          }
+
+          return {
+            ...prev,
+            // Update name only if it's still synced with product name
+            name: shouldUpdateName ? selectedProduct.name : prev.name,
+            description: selectedProduct.description || "",
+            hasHalfFullPlate: hasHalfFull,
+            halfPlatePrice:
+              hasHalfFull && selectedProduct.halfPlatePrice
+                ? selectedProduct.halfPlatePrice.toString()
+                : "",
+            fullPlatePrice: selectedProduct.fullPlatePrice
               ? selectedProduct.fullPlatePrice.toString()
-              : hasHalfFull
-              ? ""
-              : prev.price,
-        }));
+              : "",
+            price:
+              !hasHalfFull && selectedProduct.fullPlatePrice
+                ? selectedProduct.fullPlatePrice.toString()
+                : hasHalfFull
+                ? ""
+                : prev.price,
+          };
+        });
       }
     }
-  }, [formData.productId, products]);
+  }, [formData.productId, products, mode]);
+
+  // In edit mode, when products update, check if item name should be synced with product name
+  useEffect(() => {
+    if (mode === "edit" && formData.productId && products.length > 0 && formData.name) {
+      const selectedProduct = products.find((p) => p.id === formData.productId);
+      if (selectedProduct) {
+        // If item name was synced with product name (tracked in ref), update it to new product name
+        if (
+          lastSyncedProductNameRef.current !== "" &&
+          formData.name === lastSyncedProductNameRef.current &&
+          selectedProduct.name !== lastSyncedProductNameRef.current
+        ) {
+          // Product name changed, update item name
+          setFormData((prev) => ({
+            ...prev,
+            name: selectedProduct.name,
+          }));
+          lastSyncedProductNameRef.current = selectedProduct.name;
+        }
+        // If item name matches product name but ref is empty, sync it
+        else if (
+          lastSyncedProductNameRef.current === "" &&
+          formData.name === selectedProduct.name
+        ) {
+          lastSyncedProductNameRef.current = selectedProduct.name;
+        }
+      }
+    }
+  }, [products, mode, formData.productId, formData.name]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

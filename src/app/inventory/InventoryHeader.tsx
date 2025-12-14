@@ -3,7 +3,15 @@
 import { motion } from "framer-motion";
 import ReloadButton from "@/components/ReloadButton";
 
-export default function InventoryHeader() {
+interface InventoryHeaderProps {
+  isRealtimeConnected: boolean;
+  onRefresh: () => void;
+}
+
+export default function InventoryHeader({
+  isRealtimeConnected,
+  onRefresh,
+}: InventoryHeaderProps) {
   return (
     <motion.div
       className="mb-8 sm:mb-10 md:mb-12 text-center px-2"
@@ -27,29 +35,38 @@ export default function InventoryHeader() {
           <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto">
             Browse our real-time stock. Items are updated instantly.
             <br className="hidden sm:block" />
-            <span className="block sm:inline mt-2 sm:mt-0 sm:ml-2">
-              <motion.span
-                className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-medium"
-                animate={{ opacity: [1, 0.7, 1] }}
-                transition={{ duration: 2, repeat: Infinity }}
-              >
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-                Live Updates Active
-              </motion.span>
-            </span>
+            {isRealtimeConnected && (
+              <span className="block sm:inline mt-2 sm:mt-0 sm:ml-2">
+                <motion.span
+                  className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-medium"
+                  initial={{ opacity: 0, scale: 0.8 }}
+                  animate={{ opacity: [1, 0.7, 1], scale: 1 }}
+                  transition={{
+                    opacity: { duration: 2, repeat: Infinity },
+                    scale: { duration: 0.3 },
+                  }}
+                >
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  Live Updates Active
+                </motion.span>
+              </span>
+            )}
           </p>
         </motion.div>
-        <motion.div
-          className="shrink-0"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-        >
-          <ReloadButton />
-        </motion.div>
+        {/* Show reload button only when real-time connection is not established */}
+        {!isRealtimeConnected && (
+          <motion.div
+            className="shrink-0"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, delay: 0.3 }}
+          >
+            <ReloadButton onRefresh={onRefresh} />
+          </motion.div>
+        )}
       </div>
     </motion.div>
   );

@@ -42,7 +42,6 @@ export default async function InventoryPage() {
   return (
     <div className="min-h-screen bg-dark-bg p-3 sm:p-4 md:p-6 lg:p-8">
       <div className="max-w-7xl mx-auto">
-        <InventoryHeader />
         {/* Inventory Items with Skeleton Loader */}
         <InventoryClient initialItems={items} />
       </div>
