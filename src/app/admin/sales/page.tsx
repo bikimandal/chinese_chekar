@@ -142,6 +142,9 @@ export default function SalesPage() {
     setTempDate(date);
   };
 
+  // Check if search button should be enabled (when tempDate differs from selectedDate)
+  const isSearchEnabled = tempDate && tempDate !== selectedDate;
+
   // Handle search button click - commit the date and fetch sales
   const handleSearch = () => {
     setSelectedDate(tempDate);
@@ -173,14 +176,40 @@ export default function SalesPage() {
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const generateSalesReportPDF = () => {
-    if (sales.length === 0) {
-      alert("No sales data to generate report");
-      return;
-    }
-
+  const generateSalesReportPDF = async () => {
     setIsGeneratingPDF(true);
     try {
+      // Fetch ALL sales data for the selected date (no pagination)
+      let url = `/api/sales?limit=10000&offset=0`; // Large limit to get all records
+      if (selectedDate) {
+        url += `&date=${selectedDate}`;
+      }
+
+      const response = await fetch(url);
+      if (!response.ok) {
+        throw new Error("Failed to fetch sales data");
+      }
+
+      const data = await response.json();
+      const allSales: Sale[] = data.sales && Array.isArray(data.sales) ? data.sales : [];
+
+      if (allSales.length === 0) {
+        alert("No sales data to generate report");
+        setIsGeneratingPDF(false);
+        return;
+      }
+
+      // Calculate totals from all sales
+      const totalSales = allSales.length;
+      const totalRevenue = allSales.reduce(
+        (sum, sale) => sum + sale.totalAmount,
+        0
+      );
+      const totalItems = allSales.reduce(
+        (sum, sale) => sum + sale.items.length,
+        0
+      );
+      const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
       const pdf = new jsPDF({
         orientation: "portrait",
         unit: "mm",
@@ -289,17 +318,6 @@ export default function SalesPage() {
       pdf.text("SUMMARY", margin, yPos);
       yPos += 6;
 
-      const totalSales = sales.length;
-      const totalRevenue = sales.reduce(
-        (sum, sale) => sum + sale.totalAmount,
-        0
-      );
-      const totalItems = sales.reduce(
-        (sum, sale) => sum + sale.items.length,
-        0
-      );
-      const avgOrderValue = totalSales > 0 ? totalRevenue / totalSales : 0;
-
       pdf.setFontSize(10);
       pdf.setFont("helvetica", "normal");
       pdf.text(`Total Number of Sales: ${totalSales}`, margin, yPos);
@@ -329,7 +347,7 @@ export default function SalesPage() {
       yPos += 6;
 
       // Sales Data - Detailed view with complete order segregation
-      sales.forEach((sale, saleIndex) => {
+      allSales.forEach((sale, saleIndex) => {
         // Check if we need a new page before starting a new sale
         if (yPos > 250) {
           pdf.addPage();
@@ -415,7 +433,7 @@ export default function SalesPage() {
         yPos += 8;
 
         // Divider between orders
-        if (saleIndex < sales.length - 1) {
+        if (saleIndex < allSales.length - 1) {
           pdf.setLineWidth(0.3);
           pdf.line(margin, yPos, pageWidth - margin, yPos);
           yPos += 5;
@@ -484,7 +502,10 @@ export default function SalesPage() {
                 <Receipt className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-blue-400" />
               </div>
               <div className="min-w-0 flex-1">
-                <h1 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-blue-200 to-blue-200 bg-clip-text text-transparent truncate">
+                <h1 
+                  className="text-xl sm:text-2xl md:text-3xl font-bold text-white truncate"
+                  style={{ fontFamily: "var(--font-body), sans-serif" }}
+                >
                   Sales Records
                 </h1>
                 <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
@@ -523,22 +544,32 @@ export default function SalesPage() {
                   />
                   <button
                     onClick={handleSearch}
-                    disabled={loading}
+                    disabled={loading || !isSearchEnabled}
                     className="px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r from-amber-600 to-orange-600 text-white rounded-lg hover:from-amber-500 hover:to-orange-500 transition-all duration-300 text-xs sm:text-sm font-medium cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
+                    title={!isSearchEnabled ? "Select a date to enable search" : "Search for sales on selected date"}
                   >
                     <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Search</span>
+                    <span>Search</span>
                   </button>
                 </div>
               </div>
             </div>
             <button
               onClick={generateSalesReportPDF}
-              disabled={isGeneratingPDF || sales.length === 0}
+              disabled={isGeneratingPDF || (sales.length === 0 && !selectedDate)}
               className="flex items-center justify-center gap-2 px-4 sm:px-5 py-2 sm:py-2.5 bg-gradient-to-r from-blue-600 to-cyan-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-blue-500 hover:to-cyan-500 transition-all duration-300 shadow-lg shadow-blue-500/30 text-xs sm:text-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             >
-              <Download className="w-4 h-4" />
-              {isGeneratingPDF ? "Generating..." : "Download PDF Report"}
+              {isGeneratingPDF ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  <span>Compiling Report...</span>
+                </>
+              ) : (
+                <>
+                  <Download className="w-4 h-4" />
+                  <span>Download PDF Report</span>
+                </>
+              )}
             </button>
           </div>
         </div>

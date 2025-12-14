@@ -120,7 +120,10 @@ export default function AdminControlsPage() {
         <div className="mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 mb-4">
             <div className="flex-1 min-w-0">
-              <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
+              <h1 
+                className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent"
+                style={{ fontFamily: "var(--font-body), sans-serif" }}
+              >
                 Product Templates
               </h1>
               <p className="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2">
@@ -144,7 +147,10 @@ export default function AdminControlsPage() {
         {/* Products List */}
         <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-xl sm:rounded-2xl border border-slate-700/50 overflow-hidden shadow-2xl">
           <div className="p-4 sm:p-6 border-b border-slate-700/50">
-            <h2 className="text-lg sm:text-xl font-bold text-white">
+            <h2 
+              className="text-lg sm:text-xl font-bold text-white"
+              style={{ fontFamily: "var(--font-body), sans-serif" }}
+            >
               Product Templates ({products.length})
             </h2>
             <p className="text-slate-400 text-xs sm:text-sm mt-1">
@@ -184,7 +190,10 @@ export default function AdminControlsPage() {
                         />
                       </div>
                     )}
-                    <h3 className="text-base sm:text-lg font-semibold text-white mb-2 line-clamp-1">
+                    <h3 
+                      className="text-base sm:text-lg font-semibold text-white mb-2 line-clamp-1"
+                      style={{ fontFamily: "var(--font-body), sans-serif" }}
+                    >
                       {product.name}
                     </h3>
                     {product.description && (

@@ -9,6 +9,8 @@ import {
   ShoppingCart,
   Trash2,
   ChevronUp,
+  TrendingUp,
+  AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
 import { motion, AnimatePresence } from "framer-motion";
@@ -324,6 +326,7 @@ export default function LiveSellPage() {
                 0
               );
               const isOutOfStock = item.stock === 0;
+              const isLowStock = item.stock > 0 && item.stock <= 5;
 
               return (
                 <motion.div
@@ -360,12 +363,32 @@ export default function LiveSellPage() {
 
                       {/* Content */}
                       <div className="flex-1 min-w-0">
-                        <h3
-                          className="font-semibold text-white mb-1 truncate"
-                          style={{ fontFamily: "var(--font-body), sans-serif" }}
-                        >
-                          {item.name}
-                        </h3>
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <h3
+                            className="font-semibold text-white truncate flex-1 min-w-0"
+                            style={{ fontFamily: "var(--font-body), sans-serif" }}
+                          >
+                            {item.name}
+                          </h3>
+                          {/* Low Stock Badge - After name */}
+                          {isLowStock && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-amber-500/30 to-orange-500/30 backdrop-blur-sm border border-amber-400/60 rounded-full shadow-lg shadow-amber-500/20">
+                              <TrendingUp className="w-3.5 h-3.5 text-amber-300 animate-pulse" />
+                              <span className="text-[10px] text-amber-200 font-bold whitespace-nowrap">
+                                Low Stock
+                              </span>
+                            </div>
+                          )}
+                          {/* Out of Stock Badge - After name */}
+                          {isOutOfStock && (
+                            <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-gradient-to-r from-red-500/30 to-red-600/30 backdrop-blur-sm border border-red-400/60 rounded-full shadow-lg shadow-red-500/20">
+                              <AlertCircle className="w-3.5 h-3.5 text-red-300 animate-pulse" />
+                              <span className="text-[10px] text-red-200 font-bold whitespace-nowrap">
+                                Out of Stock
+                              </span>
+                            </div>
+                          )}
+                        </div>
 
                         {/* Price & Stock in one line */}
                         <div className="flex items-center gap-4 mb-3">

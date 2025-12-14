@@ -16,7 +16,10 @@ export default function AdminHeader({
       <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-0">
           <div className="flex-shrink-0">
-            <h1 className="text-xl sm:text-2xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent">
+            <h1 
+              className="text-xl sm:text-2xl font-bold text-white"
+              style={{ fontFamily: "var(--font-body), sans-serif" }}
+            >
               Admin Dashboard
             </h1>
             <p className="text-slate-400 text-xs sm:text-sm mt-1">
