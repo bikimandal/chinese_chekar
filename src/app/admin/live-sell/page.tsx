@@ -118,7 +118,15 @@ export default function LiveSellPage() {
     item: Item,
     plateType?: "half" | "full" | null
   ): number => {
-    if (!item.product?.hasHalfFullPlate || !plateType) {
+    const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
+
+    // When segregation is disabled, always use fullPlatePrice as the single price
+    if (!hasHalfFull) {
+      return item.product?.fullPlatePrice ?? item.price;
+    }
+
+    // When segregation is enabled, use the appropriate price based on plateType
+    if (!plateType || !item.product) {
       return item.price;
     }
     if (plateType === "half" && item.product.halfPlatePrice) {
