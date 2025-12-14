@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Save, X, Trash2, Image as ImageIcon } from "lucide-react";
+import { Save, X, Trash2, Image as ImageIcon, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/components/Loader";
 import CustomToggle from "@/components/CustomToggle";
@@ -230,6 +230,8 @@ export default function ProductForm({
       });
 
       if (response.ok) {
+        // Wait a brief moment to ensure DB save is complete before redirecting
+        await new Promise((resolve) => setTimeout(resolve, 300));
         router.push("/admin/product-templates");
       } else {
         const data = await response.json();
@@ -420,6 +422,26 @@ export default function ProductForm({
                           placeholder="120.00"
                         />
                       </div>
+                      {/* Quick Add Price Buttons */}
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {[30, 40, 50, 100].map((amount) => (
+                          <button
+                            key={amount}
+                            type="button"
+                            onClick={() => {
+                              const currentPrice = parseFloat(formData.halfPlatePrice) || 0;
+                              setFormData({
+                                ...formData,
+                                halfPlatePrice: (currentPrice + amount).toString(),
+                              });
+                            }}
+                            disabled={loading}
+                            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-800/50 border border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:border-amber-500/50 hover:text-amber-400 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          >
+                            +{amount}
+                          </button>
+                        ))}
+                      </div>
                     </div>
                     <div>
                       <label className="block text-xs sm:text-sm font-medium text-slate-300 mb-2">
@@ -445,6 +467,26 @@ export default function ProductForm({
                           className="w-full pl-7 sm:pl-8 pr-3 sm:pr-4 py-2 sm:py-2.5 bg-slate-900/50 border border-slate-700 rounded-lg text-sm sm:text-base text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500/50 transition-all disabled:opacity-50"
                           placeholder="200.00"
                         />
+                      </div>
+                      {/* Quick Add Price Buttons */}
+                      <div className="mt-2 flex flex-wrap gap-2">
+                        {[30, 40, 50, 100].map((amount) => (
+                          <button
+                            key={amount}
+                            type="button"
+                            onClick={() => {
+                              const currentPrice = parseFloat(formData.fullPlatePrice) || 0;
+                              setFormData({
+                                ...formData,
+                                fullPlatePrice: (currentPrice + amount).toString(),
+                              });
+                            }}
+                            disabled={loading}
+                            className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-800/50 border border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:border-amber-500/50 hover:text-amber-400 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                          >
+                            +{amount}
+                          </button>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -474,6 +516,26 @@ export default function ProductForm({
                         placeholder="200.00"
                       />
                     </div>
+                    {/* Quick Add Price Buttons */}
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {[30, 40, 50, 100].map((amount) => (
+                        <button
+                          key={amount}
+                          type="button"
+                          onClick={() => {
+                            const currentPrice = parseFloat(formData.price) || 0;
+                            setFormData({
+                              ...formData,
+                              price: (currentPrice + amount).toString(),
+                            });
+                          }}
+                          disabled={loading}
+                          className="px-3 py-1.5 sm:px-4 sm:py-2 bg-slate-800/50 border border-slate-600/50 text-slate-300 hover:bg-slate-700/50 hover:border-amber-500/50 hover:text-amber-400 rounded-lg text-xs sm:text-sm font-medium transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+                        >
+                          +{amount}
+                        </button>
+                      ))}
+                    </div>
                     <p className="text-[10px] sm:text-xs text-slate-500 mt-2">
                       Single price for this product
                     </p>
@@ -488,11 +550,15 @@ export default function ProductForm({
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-slate-700/50">
           <button
             type="submit"
-            disabled={loading}
+            disabled={loading || uploadingImage}
             className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-2.5 bg-gradient-to-r from-amber-600 to-orange-600 text-white font-semibold rounded-lg hover:from-amber-500 hover:to-orange-500 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-amber-500/20 text-sm sm:text-base active:scale-[0.98]"
           >
-            <Save className="w-4 h-4" />
-            {loading
+            {loading || uploadingImage ? (
+              <Loader2 className="w-4 h-4 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4" />
+            )}
+            {loading || uploadingImage
               ? "Saving..."
               : mode === "edit"
               ? "Save Changes"

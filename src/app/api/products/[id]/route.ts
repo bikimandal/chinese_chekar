@@ -46,10 +46,27 @@ export async function PUT(
       );
     }
 
+    // Get the old product name before updating
+    const oldProduct = await prisma.product.findUnique({
+      where: { id },
+      select: { name: true },
+    });
+
+    if (!oldProduct) {
+      return NextResponse.json(
+        { error: "Product not found" },
+        { status: 404 }
+      );
+    }
+
+    const newName = name.trim();
+    const oldName = oldProduct.name;
+
+    // Update the product
     const product = await prisma.product.update({
       where: { id },
       data: {
-        name: name.trim(),
+        name: newName,
         description: description?.trim() || null,
         image: image?.trim() || null,
         hasHalfFullPlate: hasHalfFullPlate ?? true,
@@ -58,6 +75,43 @@ export async function PUT(
         fullPlatePrice: fullPlatePrice ? parseFloat(fullPlatePrice) : null,
       },
     });
+
+    // If product name changed, update all items that use this product and have matching item name
+    if (oldName !== newName) {
+      try {
+        // Update all items that use this product and have a name matching the old product name
+        const updateResult = await prisma.item.updateMany({
+          where: {
+            productId: id,
+            name: {
+              equals: oldName,
+              mode: "insensitive", // Case-insensitive comparison
+            },
+          },
+          data: {
+            name: newName, // Update to the new product name
+          },
+        });
+        
+        if (updateResult.count > 0) {
+          console.log(
+            `✅ Updated ${updateResult.count} item(s) with product name change from "${oldName}" to "${newName}"`
+          );
+        } else {
+          // Log for debugging - check if items exist but names don't match
+          const itemsCheck = await prisma.item.findMany({
+            where: { productId: id },
+            select: { id: true, name: true },
+          });
+          console.log(
+            `⚠️ No items updated. Found ${itemsCheck.length} item(s) using this product. Item names: ${itemsCheck.map((i) => `"${i.name}"`).join(", ")}. Old product name was: "${oldName}"`
+          );
+        }
+      } catch (error) {
+        console.error("❌ Error updating items with product name change:", error);
+        // Don't fail the product update if item update fails
+      }
+    }
 
     return NextResponse.json(product);
   } catch (error: any) {
