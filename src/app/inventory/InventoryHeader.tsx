@@ -18,19 +18,26 @@ export default function InventoryHeader() {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.6, delay: 0.2 }}
         >
-          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4">
-            Live <span className="text-gold-accent">Inventory</span>
+          <h1
+            className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-3 sm:mb-4"
+            style={{ fontFamily: "var(--font-body), sans-serif" }}
+          >
+            Live <span className="text-gold-accent">Menu</span>
           </h1>
           <p className="text-sm sm:text-base text-gray-400 max-w-2xl mx-auto">
             Browse our real-time stock. Items are updated instantly.
             <br className="hidden sm:block" />
-            <span className="block sm:inline mt-1 sm:mt-0">
+            <span className="block sm:inline mt-2 sm:mt-0 sm:ml-2">
               <motion.span
-                className="text-primary-red font-semibold"
-                animate={{ opacity: [1, 0.5, 1] }}
+                className="inline-flex items-center gap-1.5 px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-full text-emerald-400 text-xs font-medium"
+                animate={{ opacity: [1, 0.7, 1] }}
                 transition={{ duration: 2, repeat: Infinity }}
               >
-                ● Live Updates Active
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                </span>
+                Live Updates Active
               </motion.span>
             </span>
           </p>
@@ -47,4 +54,3 @@ export default function InventoryHeader() {
     </motion.div>
   );
 }
-

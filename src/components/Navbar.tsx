@@ -1,13 +1,53 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
-import { Menu, X, ShoppingBag, ChefHat } from "lucide-react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { Menu, X, ShoppingBag, ChefHat, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const router = useRouter();
+
+  useEffect(() => {
+    checkSession();
+  }, []);
+
+  const checkSession = async () => {
+    try {
+      const response = await fetch("/api/auth/session", {
+        credentials: "include",
+        cache: "no-store",
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        setIsAuthenticated(!!data.user);
+      } else {
+        setIsAuthenticated(false);
+      }
+    } catch (error) {
+      console.error("Error checking session:", error);
+      setIsAuthenticated(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+      setIsAuthenticated(false);
+      setIsOpen(false);
+      router.push("/login");
+    } catch (error) {
+      console.error("Logout error:", error);
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <nav className="fixed top-0 w-full z-50 transition-all duration-300 bg-slate-900/80 backdrop-blur-xl border-b border-slate-700/50 shadow-lg shadow-slate-900/50">
@@ -32,16 +72,7 @@ export default function Navbar() {
           <div className="hidden md:block">
             <div className="ml-10 flex items-baseline space-x-6 lg:space-x-8">
               <NavLink href="/">Home</NavLink>
-              <Link
-                href="/inventory"
-                className="text-slate-300 hover:text-amber-400 hover:scale-105 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 flex items-center gap-2 group"
-              >
-                <span>Live Inventory</span>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-                </span>
-              </Link>
+              <LiveMenuLink />
               <NavLink href="/about">About Us</NavLink>
               <ContactScrollLink />
               <Link
@@ -50,6 +81,25 @@ export default function Navbar() {
               >
                 Admin
               </Link>
+              {isAuthenticated && (
+                <button
+                  onClick={handleLogout}
+                  disabled={isLoggingOut}
+                  className="ml-2 px-4 py-2 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 rounded-lg text-sm font-medium transition-all duration-200 hover:scale-105 flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isLoggingOut ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                      <span>Logging out...</span>
+                    </>
+                  ) : (
+                    <>
+                      <LogOut className="w-4 h-4" />
+                      <span>Exit</span>
+                    </>
+                  )}
+                </button>
+              )}
             </div>
           </div>
           <div className="-mr-2 flex md:hidden">
@@ -119,7 +169,7 @@ export default function Navbar() {
                 onClick={() => setIsOpen(false)}
                 withIndicator
               >
-                Live Inventory
+                Live Menu
               </MobileNavLink>
               <MobileNavLink href="/about" onClick={() => setIsOpen(false)}>
                 About Us
@@ -141,6 +191,34 @@ export default function Navbar() {
                   Admin
                 </Link>
               </motion.div>
+              {isAuthenticated && (
+                <motion.div
+                  variants={{
+                    closed: { opacity: 0, x: -20 },
+                    open: { opacity: 1, x: 0 },
+                  }}
+                  transition={{ duration: 0.3 }}
+                  className="mx-3 border-t border-slate-700/50 pt-2"
+                >
+                  <button
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="w-full px-4 py-2.5 bg-red-500/10 border border-red-500/30 text-red-400 hover:bg-red-500/20 rounded-lg text-sm font-medium transition-all duration-200 text-center flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isLoggingOut ? (
+                      <>
+                        <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin"></div>
+                        <span>Logging out...</span>
+                      </>
+                    ) : (
+                      <>
+                        <LogOut className="w-4 h-4" />
+                        <span>Exit</span>
+                      </>
+                    )}
+                  </button>
+                </motion.div>
+              )}
             </motion.div>
           </motion.div>
         )}
@@ -156,7 +234,23 @@ function NavLink({ href, children }: { href: string; children: React.ReactNode }
       className="text-slate-300 hover:text-amber-400 hover:scale-105 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group"
     >
       {children}
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500 group-hover:w-full transition-all duration-300"></span>
+      <span className="nav-underline"></span>
+    </Link>
+  );
+}
+
+function LiveMenuLink() {
+  return (
+    <Link
+      href="/inventory"
+      className="text-slate-300 hover:text-amber-400 hover:scale-105 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group flex items-center gap-2"
+    >
+      <span>Live Menu</span>
+      <span className="relative flex h-2 w-2">
+        <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      </span>
+      <span className="nav-underline"></span>
     </Link>
   );
 }
@@ -177,7 +271,7 @@ function ContactScrollLink() {
       className="text-slate-300 hover:text-amber-400 hover:scale-105 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 relative group"
     >
       Contact
-      <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-amber-500 to-orange-500 group-hover:w-full transition-all duration-300"></span>
+      <span className="nav-underline"></span>
     </a>
   );
 }

@@ -1,8 +1,58 @@
 import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
+import { createClient } from "@supabase/supabase-js";
 import { prisma } from "@/lib/prisma";
+
+// Helper function to check authentication
+async function checkAuth() {
+  try {
+    const cookieStore = await cookies();
+    const accessToken = cookieStore.get("sb-access-token")?.value;
+    const refreshToken = cookieStore.get("sb-refresh-token")?.value;
+
+    if (!accessToken || !refreshToken) {
+      return null;
+    }
+
+    const supabase = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+      {
+        global: {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        },
+      }
+    );
+
+    const {
+      data: { user },
+      error,
+    } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      return null;
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Auth check error:", error);
+    return null;
+  }
+}
 
 // POST - Create a new sale
 export async function POST(request: Request) {
+  // Check authentication
+  const user = await checkAuth();
+  if (!user) {
+    return NextResponse.json(
+      { error: "Unauthorized - Authentication required" },
+      { status: 401 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { items } = body; // items: [{ itemId, itemName, quantity, unitPrice, totalPrice }]
@@ -121,6 +171,15 @@ export async function POST(request: Request) {
 
 // GET - Get all sales (for admin)
 export async function GET(request: Request) {
+  // Check authentication
+  const user = await checkAuth();
+  if (!user) {
+    return NextResponse.json(
+      { error: "Unauthorized - Authentication required" },
+      { status: 401 }
+    );
+  }
+
   try {
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50");
