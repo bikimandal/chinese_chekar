@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import ItemCard from "@/components/ItemCard";
 import InventoryItemsSkeleton from "@/components/skeletons/InventoryItemsSkeleton";
 import InventoryItemSkeleton from "@/components/skeletons/InventoryItemSkeleton";
@@ -231,6 +231,30 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
     };
   }, []);
 
+  // Optimized: Memoize item variants function
+  const getItemVariants = useCallback((index: number): Variants => {
+    return {
+      hidden: { 
+        opacity: 0, 
+        y: 20 // Simple slide up from bottom
+      },
+      visible: {
+        opacity: 1, 
+        y: 0,
+        transition: {
+          duration: 0.3,
+          ease: "easeOut",
+          delay: index < 6 ? index * 0.1 : 0, // Stagger first few, subsequent ones appear as you scroll
+        },
+      },
+      exit: { 
+        opacity: 0, 
+        scale: 0.95, 
+        transition: { duration: 0.2 } 
+      },
+    };
+  }, []);
+
   // Show skeleton while loading
   if (isLoading) {
     // Show skeleton matching the current number of items, or default to 4
@@ -238,42 +262,7 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
     return <InventoryItemsSkeleton count={skeletonCount} />;
   }
 
-  // Optimized: Memoize item variants function
-  const getItemVariants = useCallback((index: number) => {
-    const isEven = index % 2 === 0;
-    return {
-      hidden: {
-        opacity: 0,
-        x: isEven ? 60 : -60, // Reduced distance for smoother entrance
-        scale: 0.92,
-        rotateY: isEven ? 8 : -8, // More subtle 3D effect
-        filter: "blur(4px)", // Subtle blur for depth
-      },
-      visible: {
-        opacity: 1,
-        x: 0,
-        scale: 1,
-        rotateY: 0,
-        filter: "blur(0px)",
-        transition: {
-          duration: 0.6,
-          ease: [0.16, 1, 0.3, 1] as [number, number, number, number], // Smooth, refined easing (easeOutExpo-like)
-          delay: index * 0.06, // Optimized stagger timing
-          opacity: { duration: 0.4 }, // Faster opacity fade
-          filter: { duration: 0.5 }, // Slightly faster blur
-        },
-      },
-      exit: {
-        opacity: 0,
-        scale: 0.95,
-        filter: "blur(2px)",
-        transition: {
-          duration: 0.25,
-          ease: [0.4, 0, 1, 1] as [number, number, number, number], // Quick exit
-        },
-      },
-    };
-  }, []);
+
 
   return (
     <>
@@ -302,8 +291,10 @@ export default function InventoryClient({ initialItems }: InventoryClientProps) 
                   key={item.id}
                   variants={getItemVariants(index)}
                   initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true, margin: "-100px" }} // Trigger earlier for smoother entry
+                  // For first 6 items, animate immediately. For others, wait until in view.
+                  animate={index < 6 ? "visible" : undefined}
+                  whileInView={index >= 6 ? "visible" : undefined}
+                  viewport={{ once: true, margin: "0px 0px -50px 0px" }}
                   exit="exit"
                   layout
                   whileHover={!isUpdating ? { 
