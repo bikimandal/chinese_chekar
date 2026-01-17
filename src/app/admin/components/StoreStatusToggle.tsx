@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Store, Clock } from "lucide-react";
+import { useStore } from "@/contexts/StoreContext";
 
 interface StoreStatus {
   id: string;
@@ -11,9 +12,13 @@ interface StoreStatus {
 }
 
 export default function StoreStatusToggle() {
+  const { currentStore } = useStore();
   const [status, setStatus] = useState<StoreStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [isToggling, setIsToggling] = useState(false);
+  
+  // Only show toggle for default store (Chinese Chekar)
+  const isDefaultStore = currentStore?.isDefault === true;
 
   useEffect(() => {
     fetchStatus();
@@ -76,6 +81,11 @@ export default function StoreStatusToggle() {
       setIsToggling(false);
     }
   };
+
+  // Don't show toggle for non-default stores
+  if (!isDefaultStore) {
+    return null;
+  }
 
   if (!status) {
     return (

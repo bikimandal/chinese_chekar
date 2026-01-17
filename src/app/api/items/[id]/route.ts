@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentStoreId, getDefaultStoreBySlug } from "@/lib/store";
 
 // GET - Get single item
 export async function GET(
@@ -8,8 +9,26 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
+    const { searchParams } = new URL(request.url);
+    const admin = searchParams.get("admin") === "true";
+
+    // Get store ID: admin uses current store, public uses default store
+    let storeId: string;
+    if (admin) {
+      const currentStoreId = await getCurrentStoreId();
+      if (!currentStoreId) {
+        return NextResponse.json(
+          { error: "No store selected" },
+          { status: 401 }
+        );
+      }
+      storeId = currentStoreId;
+    } else {
+      storeId = await getDefaultStoreBySlug();
+    }
+
     const item = await prisma.item.findUnique({
-      where: { id },
+      where: { id, storeId },
       include: {
         category: true,
         product: true,
@@ -36,9 +55,30 @@ export async function PUT(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { name, description, price, stock, image, categoryId, productId, isAvailable, isVisible } = body;
+
+    // Verify item belongs to current store
+    const existingItem = await prisma.item.findUnique({
+      where: { id },
+      select: { storeId: true },
+    });
+
+    if (!existingItem || existingItem.storeId !== storeId) {
+      return NextResponse.json(
+        { error: "Item not found" },
+        { status: 404 }
+      );
+    }
 
     const item = await prisma.item.update({
       where: { id },
@@ -75,11 +115,19 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     
-    // Get item to find image path before deleting
+    // Get item to find image path before deleting, and verify store ownership
     const item = await prisma.item.findUnique({
-      where: { id },
+      where: { id, storeId },
       include: {
         product: {
           select: { image: true },

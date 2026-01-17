@@ -1,15 +1,24 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentStoreId } from "@/lib/store";
 
-// GET - Get single product
+// GET - Get single product (admin only)
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id, storeId },
     });
 
     if (!product) {
@@ -29,12 +38,20 @@ export async function GET(
   }
 }
 
-// PUT - Update product
+// PUT - Update product (admin only)
 export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
     const body = await request.json();
     const { name, description, image, hasHalfFullPlate, halfPlatePrice, fullPlatePrice } = body;
@@ -49,9 +66,9 @@ export async function PUT(
     // Optimized: Get old name first, then update
     const newName = name.trim();
     
-    // Get the old product name before updating
+    // Get the old product name before updating, and verify store ownership
     const oldProduct = await prisma.product.findUnique({
-      where: { id },
+      where: { id, storeId },
       select: { name: true },
     });
 
@@ -85,6 +102,7 @@ export async function PUT(
         const updateResult = await prisma.item.updateMany({
           where: {
             productId: id,
+            storeId, // Ensure items belong to same store
             name: {
               equals: oldName,
               mode: "insensitive", // Case-insensitive comparison
@@ -142,17 +160,25 @@ export async function PUT(
   }
 }
 
-// DELETE - Delete product
+// DELETE - Delete product (admin only)
 export async function DELETE(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const { id } = await params;
 
-    // Check if product is used by any items
+    // Check if product is used by any items in this store
     const itemsUsingProduct = await prisma.item.count({
-      where: { productId: id },
+      where: { productId: id, storeId },
     });
 
     if (itemsUsingProduct > 0) {
@@ -164,9 +190,9 @@ export async function DELETE(
       );
     }
 
-    // Get product to find image path before deleting
+    // Get product to find image path before deleting, and verify store ownership
     const product = await prisma.product.findUnique({
-      where: { id },
+      where: { id, storeId },
     });
 
     if (!product) {

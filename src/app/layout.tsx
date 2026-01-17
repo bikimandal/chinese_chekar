@@ -5,6 +5,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import TopProgressBar from "@/components/TopProgressBar";
 import DisableZoom from "@/components/DisableZoom";
+import ToastContainer from "@/components/ToastContainer";
 
 // Elegant serif font for headings - refined and professional
 const cormorant = Cormorant({
@@ -67,6 +68,7 @@ export default function RootLayout({
         <TopProgressBar />
         <main className="grow pt-16 sm:pt-20">{children}</main>
         <Footer />
+        <ToastContainer />
       </body>
     </html>
   );

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
+import { getCurrentUser } from "@/lib/user-access";
 
 export async function GET() {
   try {
@@ -76,10 +77,23 @@ export async function GET() {
       return response;
     }
 
-    return NextResponse.json({ user, session: { access_token: accessToken } });
+    // Get user from database with role and store access
+    const dbUser = await getCurrentUser();
+    
+    return NextResponse.json({ 
+      user, 
+      session: { access_token: accessToken },
+      dbUser: dbUser ? {
+        id: dbUser.id,
+        email: dbUser.email,
+        name: dbUser.name,
+        role: dbUser.role,
+        storeAccess: dbUser.storeAccess.map(sa => sa.storeId),
+      } : null,
+    });
   } catch (error: any) {
     console.error("Session check error:", error);
-    return NextResponse.json({ user: null, session: null });
+    return NextResponse.json({ user: null, session: null, dbUser: null });
   }
 }
 

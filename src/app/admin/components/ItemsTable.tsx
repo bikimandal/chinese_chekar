@@ -1,3 +1,4 @@
+import { memo, useMemo } from "react";
 import Link from "next/link";
 import { Plus, Edit2, Trash2, Loader2 } from "lucide-react";
 import { Item } from "../types";
@@ -12,6 +13,138 @@ interface ItemsTableProps {
   onToggleAvailability: (item: Item) => void;
 }
 
+// Memoized price component to prevent unnecessary re-renders
+const PriceDisplay = memo(({ item }: { item: Item }) => {
+  const priceData = useMemo(() => {
+    const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
+    
+    if (!hasHalfFull) {
+      const price = item.product?.fullPlatePrice ?? item.price;
+      return { type: "single" as const, price };
+    }
+    
+    return {
+      type: "dual" as const,
+      halfPrice: item.product?.halfPlatePrice ?? 0,
+      fullPrice: item.product?.fullPlatePrice ?? item.price,
+    };
+  }, [item.product?.hasHalfFullPlate, item.product?.halfPlatePrice, item.product?.fullPlatePrice, item.price]);
+
+  if (priceData.type === "single") {
+    return <span className="text-amber-400 font-semibold">₹{priceData.price}</span>;
+  }
+
+  return (
+    <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-400">Half:</span>
+        <span className="text-amber-400 font-semibold">₹{priceData.halfPrice}</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <span className="text-xs text-slate-400">Full:</span>
+        <span className="text-amber-400 font-semibold">₹{priceData.fullPrice}</span>
+      </div>
+    </div>
+  );
+});
+
+PriceDisplay.displayName = "PriceDisplay";
+
+// Memoized table row component
+const ItemRow = memo(({ 
+  item, 
+  togglingItemId, 
+  deletingItemId, 
+  onDelete, 
+  onToggleAvailability 
+}: {
+  item: Item;
+  togglingItemId: string | null;
+  deletingItemId: string | null;
+  onDelete: (id: string) => void;
+  onToggleAvailability: (item: Item) => void;
+}) => (
+  <tr key={item.id} className="hover:bg-slate-800/30 transition-colors">
+    <td className="px-4 lg:px-6 py-3 lg:py-4">
+      <div className="flex items-center gap-3">
+        {item.image && (
+          <img
+            src={item.image}
+            alt={item.name}
+            className="w-10 h-10 rounded-lg object-cover"
+            loading="lazy"
+          />
+        )}
+        <span
+          className="text-white font-medium text-sm sm:text-base"
+          style={{ fontFamily: "var(--font-body), sans-serif" }}
+        >
+          {item.name}
+        </span>
+      </div>
+    </td>
+    <td className="px-4 lg:px-6 py-3 lg:py-4">
+      {item.category ? (
+        <span className="px-2 sm:px-3 py-1 bg-slate-700/50 text-slate-300 rounded-lg text-xs sm:text-sm">
+          {item.category.name}
+        </span>
+      ) : item.product ? (
+        <span className="px-2 sm:px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg text-xs sm:text-sm">
+          {item.product.name}
+        </span>
+      ) : (
+        <span className="px-2 sm:px-3 py-1 bg-slate-700/50 text-slate-400 rounded-lg text-xs sm:text-sm">
+          No category
+        </span>
+      )}
+    </td>
+    <td className="px-4 lg:px-6 py-3 lg:py-4 text-sm sm:text-base">
+      <PriceDisplay item={item} />
+    </td>
+    <td className="px-4 lg:px-6 py-3 lg:py-4 text-white text-sm sm:text-base">
+      {item.stock}
+    </td>
+    <td className="px-4 lg:px-6 py-3 lg:py-4">
+      <StatusBadge
+        item={item}
+        isToggling={togglingItemId === item.id}
+      />
+    </td>
+    <td className="px-4 lg:px-6 py-3 lg:py-4">
+      <AvailabilityToggle
+        item={item}
+        isToggling={togglingItemId === item.id}
+        onToggle={() => onToggleAvailability(item)}
+      />
+    </td>
+    <td className="px-4 lg:px-6 py-3 lg:py-4">
+      <div className="flex items-center gap-2">
+        <Link
+          href={`/admin/items/edit/${item.id}`}
+          className="p-2 text-blue-400 hover:bg-blue-500/10 border border-blue-500/30 rounded-lg transition-all duration-300 cursor-pointer"
+          title="Edit"
+        >
+          <Edit2 className="w-4 h-4" />
+        </Link>
+        <button
+          onClick={() => onDelete(item.id)}
+          disabled={deletingItemId === item.id}
+          className="p-2 text-red-400 hover:bg-red-500/10 border border-red-500/30 rounded-lg transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          title={deletingItemId === item.id ? "Deleting..." : "Delete"}
+        >
+          {deletingItemId === item.id ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Trash2 className="w-4 h-4" />
+          )}
+        </button>
+      </div>
+    </td>
+  </tr>
+));
+
+ItemRow.displayName = "ItemRow";
+
 export default function ItemsTable({
   items,
   togglingItemId,
@@ -19,8 +152,14 @@ export default function ItemsTable({
   onDelete,
   onToggleAvailability,
 }: ItemsTableProps) {
-  // Helper function to render price display
-  // Shows both half and full plate prices when segregation is enabled
+  // Optimized: Use Map for O(1) lookups instead of array.find (O(n))
+  const itemsMap = useMemo(() => {
+    const map = new Map<string, Item>();
+    items.forEach((item) => map.set(item.id, item));
+    return map;
+  }, [items]);
+
+  // Helper function to render price display (kept for mobile view compatibility)
   const renderPrice = (item: Item) => {
     const hasHalfFull = item.product?.hasHalfFullPlate ?? false;
 
@@ -103,87 +242,14 @@ export default function ItemsTable({
           <tbody className="divide-y divide-slate-700/50">
             {Array.isArray(items) &&
               items.map((item) => (
-                <tr
+                <ItemRow
                   key={item.id}
-                  className="hover:bg-slate-800/30 transition-colors"
-                >
-                  <td className="px-4 lg:px-6 py-3 lg:py-4">
-                    <div className="flex items-center gap-3">
-                      {item.image && (
-                        <img
-                          src={item.image}
-                          alt={item.name}
-                          className="w-10 h-10 rounded-lg object-cover"
-                        />
-                      )}
-                      <span
-                        className="text-white font-medium text-sm sm:text-base"
-                        style={{ fontFamily: "var(--font-body), sans-serif" }}
-                      >
-                        {item.name}
-                      </span>
-                    </div>
-                  </td>
-                  <td className="px-4 lg:px-6 py-3 lg:py-4">
-                    {item.category ? (
-                      <span className="px-2 sm:px-3 py-1 bg-slate-700/50 text-slate-300 rounded-lg text-xs sm:text-sm">
-                        {item.category.name}
-                      </span>
-                    ) : item.product ? (
-                      <span className="px-2 sm:px-3 py-1 bg-amber-500/20 text-amber-400 rounded-lg text-xs sm:text-sm">
-                        {item.product.name}
-                      </span>
-                    ) : (
-                      <span className="px-2 sm:px-3 py-1 bg-slate-700/50 text-slate-400 rounded-lg text-xs sm:text-sm">
-                        No category
-                      </span>
-                    )}
-                  </td>
-                  <td className="px-4 lg:px-6 py-3 lg:py-4 text-sm sm:text-base">
-                    {renderPrice(item)}
-                  </td>
-                  <td className="px-4 lg:px-6 py-3 lg:py-4 text-white text-sm sm:text-base">
-                    {item.stock}
-                  </td>
-                  <td className="px-4 lg:px-6 py-3 lg:py-4">
-                    <StatusBadge
-                      item={item}
-                      isToggling={togglingItemId === item.id}
-                    />
-                  </td>
-                  <td className="px-4 lg:px-6 py-3 lg:py-4">
-                    <AvailabilityToggle
-                      item={item}
-                      isToggling={togglingItemId === item.id}
-                      onToggle={() => onToggleAvailability(item)}
-                    />
-                  </td>
-                  <td className="px-4 lg:px-6 py-3 lg:py-4">
-                    <div className="flex items-center gap-2">
-                      <Link
-                        href={`/admin/items/edit/${item.id}`}
-                        className="p-2 text-blue-400 hover:bg-blue-500/10 border border-blue-500/30 rounded-lg transition-all duration-300 cursor-pointer"
-                        title="Edit"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </Link>
-                      <button
-                        onClick={() => onDelete(item.id)}
-                        disabled={deletingItemId === item.id}
-                        className="p-2 text-red-400 hover:bg-red-500/10 border border-red-500/30 rounded-lg transition-all duration-300 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                        title={
-                          deletingItemId === item.id ? "Deleting..." : "Delete"
-                        }
-                      >
-                        {deletingItemId === item.id ? (
-                          <Loader2 className="w-4 h-4 animate-spin" />
-                        ) : (
-                          <Trash2 className="w-4 h-4" />
-                        )}
-                      </button>
-                    </div>
-                  </td>
-                </tr>
+                  item={item}
+                  togglingItemId={togglingItemId}
+                  deletingItemId={deletingItemId}
+                  onDelete={onDelete}
+                  onToggleAvailability={onToggleAvailability}
+                />
               ))}
           </tbody>
         </table>

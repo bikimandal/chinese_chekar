@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { cookies } from "next/headers";
+import { prisma } from "@/lib/prisma";
+import { UserRole } from "@/lib/user-access";
 
 export async function POST(request: Request) {
   try {
@@ -54,6 +56,31 @@ export async function POST(request: Request) {
         { error: "Failed to create session" },
         { status: 401 }
       );
+    }
+
+    // Ensure user exists in Prisma database (sync from Supabase Auth)
+    if (data.user?.email) {
+      try {
+        const existingUser = await prisma.user.findUnique({
+          where: { email: data.user.email },
+        });
+
+        if (!existingUser) {
+          // Create user in Prisma database
+          await prisma.user.create({
+            data: {
+              email: data.user.email.toLowerCase(),
+              password: "supabase_auth_only", // Placeholder, actual auth is via Supabase
+              role: UserRole.ADMIN, // Default to ADMIN for first-time users
+              name: data.user.user_metadata?.name || data.user.user_metadata?.full_name || null,
+            },
+          });
+          console.log(`✅ Auto-created user in database: ${data.user.email}`);
+        }
+      } catch (dbError) {
+        console.error("Error syncing user to database:", dbError);
+        // Continue with login even if DB sync fails
+      }
     }
 
     // Create response with user data

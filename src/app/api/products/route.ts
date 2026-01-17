@@ -1,10 +1,20 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentStoreId } from "@/lib/store";
 
-// GET - Get all products
+// GET - Get all products (admin only)
 export async function GET() {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const products = await prisma.product.findMany({
+      where: { storeId },
       orderBy: {
         createdAt: "desc",
       },
@@ -23,9 +33,17 @@ export async function GET() {
   }
 }
 
-// POST - Create new product
+// POST - Create new product (admin only)
 export async function POST(request: Request) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { name, description, image, hasHalfFullPlate, halfPlatePrice, fullPlatePrice } = body;
 
@@ -43,8 +61,8 @@ export async function POST(request: Request) {
         image: image?.trim() || null,
         hasHalfFullPlate: hasHalfFullPlate ?? true,
         halfPlatePrice: hasHalfFullPlate && halfPlatePrice ? parseFloat(halfPlatePrice) : null,
-        // When toggle is off, the form sends price as fullPlatePrice, so always use fullPlatePrice if provided
         fullPlatePrice: fullPlatePrice ? parseFloat(fullPlatePrice) : null,
+        storeId, // Always include storeId
       },
     });
 
@@ -61,7 +79,7 @@ export async function POST(request: Request) {
     if (error.code === "P2002") {
       return NextResponse.json(
         { 
-          error: "A product with this name already exists",
+          error: "A product with this name already exists in this store",
           details: error.meta?.target ? `Field: ${error.meta.target.join(", ")}` : undefined
         },
         { status: 409 }

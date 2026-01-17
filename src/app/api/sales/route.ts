@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { createClient } from "@supabase/supabase-js";
 import { prisma } from "@/lib/prisma";
+import { getCurrentStoreId } from "@/lib/store";
 
 // Helper function to check authentication
 async function checkAuth() {
@@ -54,6 +55,14 @@ export async function POST(request: Request) {
   }
 
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { items } = body; // items: [{ itemId, itemName, quantity, unitPrice, totalPrice }]
 
@@ -74,15 +83,16 @@ export async function POST(request: Request) {
     const now = new Date();
     const dateStr = now.toISOString().slice(0, 10).replace(/-/g, ""); // YYYYMMDD
     
-    // Find the last invoice number for today
+    // Find the last invoice number for today in this store
     const todayStart = new Date(now);
     todayStart.setHours(0, 0, 0, 0);
     const todayEnd = new Date(now);
     todayEnd.setHours(23, 59, 59, 999);
     
-    // Get all sales from today
+    // Get all sales from today for this store
     const todaySales = await prisma.sale.findMany({
       where: {
+        storeId,
         saleDate: {
           gte: todayStart,
           lte: todayEnd,
@@ -127,6 +137,7 @@ export async function POST(request: Request) {
       data: {
         invoiceNumber,
         totalAmount,
+        storeId, // Always include storeId
         items: {
           create: items.map((item: any) => ({
             itemId: item.itemId,
@@ -144,10 +155,10 @@ export async function POST(request: Request) {
     });
 
     // Optimized: Batch stock updates instead of N+1 queries
-    // First, fetch all items in one query
+    // First, fetch all items in one query (ensure they belong to same store)
     const itemIds = items.map((item: any) => item.itemId);
     const currentItems = await prisma.item.findMany({
-      where: { id: { in: itemIds } },
+      where: { id: { in: itemIds }, storeId },
       select: { id: true, stock: true },
     });
 
@@ -161,7 +172,7 @@ export async function POST(request: Request) {
       items.map((item: any) => {
         const currentStock = itemStockMap.get(item.itemId) ?? 0;
         return prisma.item.update({
-          where: { id: item.itemId },
+          where: { id: item.itemId, storeId },
           data: {
             stock: Math.max(0, currentStock - item.quantity),
           },
@@ -191,13 +202,21 @@ export async function GET(request: Request) {
   }
 
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const limit = parseInt(searchParams.get("limit") || "50");
     const offset = parseInt(searchParams.get("offset") || "0");
     const date = searchParams.get("date"); // Format: YYYY-MM-DD
 
-    // Build where clause for date filtering
-    let whereClause: any = {};
+    // Build where clause for date filtering and store
+    let whereClause: any = { storeId };
     if (date) {
       const dateObj = new Date(date);
       const startOfDay = new Date(dateObj);
