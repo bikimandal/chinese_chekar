@@ -1,18 +1,38 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentStoreId, getDefaultStoreBySlug } from "@/lib/store";
 
 // GET - Get current store status
-export async function GET() {
+export async function GET(request: Request) {
   try {
-    // Get the most recent store status, or create default if none exists
-    let status = await prisma.storeStatus.findFirst({
-      orderBy: { updatedAt: "desc" },
+    const { searchParams } = new URL(request.url);
+    const admin = searchParams.get("admin") === "true";
+
+    // Get store ID: admin uses current store, public uses default store
+    let storeId: string;
+    if (admin) {
+      const currentStoreId = await getCurrentStoreId();
+      if (!currentStoreId) {
+        return NextResponse.json(
+          { error: "No store selected" },
+          { status: 401 }
+        );
+      }
+      storeId = currentStoreId;
+    } else {
+      storeId = await getDefaultStoreBySlug();
+    }
+
+    // Get store status for this store
+    let status = await prisma.storeStatus.findUnique({
+      where: { storeId },
     });
 
     if (!status) {
       // Create default status if none exists
       status = await prisma.storeStatus.create({
         data: {
+          storeId,
           isOpen: true,
           message: "We are currently closed. Please check back later!",
         },
@@ -49,22 +69,43 @@ export async function GET() {
   }
 }
 
-// PUT - Update store status
+// PUT - Update store status (admin only, default store only)
 export async function PUT(request: Request) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
+    // Only allow status updates for the default store
+    const store = await prisma.store.findUnique({
+      where: { id: storeId },
+      select: { isDefault: true },
+    });
+
+    if (!store || !store.isDefault) {
+      return NextResponse.json(
+        { error: "Store status can only be updated for the default store" },
+        { status: 403 }
+      );
+    }
+
     const body = await request.json();
     const { isOpen, message } = body;
 
-    // Get the most recent status
-    const currentStatus = await prisma.storeStatus.findFirst({
-      orderBy: { updatedAt: "desc" },
+    // Get the current status for this store
+    const currentStatus = await prisma.storeStatus.findUnique({
+      where: { storeId },
     });
 
     let status;
     if (currentStatus) {
       // Update existing status
       status = await prisma.storeStatus.update({
-        where: { id: currentStatus.id },
+        where: { storeId },
         data: {
           isOpen: isOpen !== undefined ? isOpen : currentStatus.isOpen,
           message: message !== undefined ? message : currentStatus.message,
@@ -74,6 +115,7 @@ export async function PUT(request: Request) {
       // Create new status if none exists
       status = await prisma.storeStatus.create({
         data: {
+          storeId,
           isOpen: isOpen !== undefined ? isOpen : true,
           message: message || "We are currently closed. Please check back later!",
         },

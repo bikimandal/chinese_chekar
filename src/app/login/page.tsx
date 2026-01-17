@@ -8,6 +8,7 @@ export default async function LoginPage() {
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("sb-access-token")?.value;
   const refreshToken = cookieStore.get("sb-refresh-token")?.value;
+  const currentStoreId = cookieStore.get("current-store-id")?.value;
 
   if (accessToken && refreshToken) {
     // User has tokens, verify they're valid
@@ -28,10 +29,11 @@ export default async function LoginPage() {
       error,
     } = await supabase.auth.getUser();
 
-    // If user is valid, redirect immediately
-    if (user && !error) {
+    // If user is valid and has store selected, redirect immediately
+    if (user && !error && currentStoreId) {
       redirect("/admin");
     }
+    // If user is valid but no store selected, they'll see store selector
   }
 
   // Not logged in, show login form

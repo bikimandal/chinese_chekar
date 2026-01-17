@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getCurrentStoreId, getDefaultStoreBySlug } from "@/lib/store";
 
 // GET - Get all visible items
 export async function GET(request: Request) {
@@ -9,12 +10,34 @@ export async function GET(request: Request) {
     const search = searchParams.get("search");
 
     const admin = searchParams.get("admin") === "true";
-    const where: any = admin ? {} : { isVisible: true };
+    
+    // Get store ID: admin uses current store, public uses default store
+    let storeId: string;
+    if (admin) {
+      const currentStoreId = await getCurrentStoreId();
+      if (!currentStoreId) {
+        console.error("No store selected - cookie not set");
+        return NextResponse.json(
+          { error: "No store selected" },
+          { status: 401 }
+        );
+      }
+      storeId = currentStoreId;
+    } else {
+      // Public route - always use default store
+      storeId = await getDefaultStoreBySlug();
+    }
+
+    const where: any = {
+      storeId,
+      ...(admin ? {} : { isVisible: true }),
+    };
 
     if (category) {
       where.category = {
         name: category,
         isActive: true,
+        storeId, // Ensure category belongs to same store
       };
     }
 
@@ -53,6 +76,14 @@ export async function GET(request: Request) {
 // POST - Create new item (admin only)
 export async function POST(request: Request) {
   try {
+    const storeId = await getCurrentStoreId();
+    if (!storeId) {
+      return NextResponse.json(
+        { error: "No store selected" },
+        { status: 401 }
+      );
+    }
+
     const body = await request.json();
     const { name, description, price, stock, productId, isAvailable, isVisible } = body;
 
@@ -60,8 +91,8 @@ export async function POST(request: Request) {
     let image = null;
     if (productId) {
       const product = await prisma.product.findUnique({
-        where: { id: productId },
-        select: { image: true }, // Only select image field
+        where: { id: productId, storeId }, // Ensure product belongs to same store
+        select: { image: true },
       });
       if (product?.image) {
         image = product.image;
@@ -77,6 +108,7 @@ export async function POST(request: Request) {
         image,
         categoryId: null, // No longer required
         productId: productId || null,
+        storeId, // Always include storeId
         isAvailable: isAvailable ?? true,
         isVisible: isVisible ?? true,
       },

@@ -17,13 +17,26 @@ interface Sale {
   }>;
 }
 
+interface StoreInfo {
+  invoiceName?: string | null;
+  invoiceAddress?: string | null;
+  invoicePhone?: string | null;
+  name?: string;
+}
+
 interface InvoicePDFProps {
   sale: Sale;
+  storeInfo?: StoreInfo;
   autoPrint?: boolean;
 }
 
-export default function InvoicePDF({ sale, autoPrint = false }: InvoicePDFProps) {
+export default function InvoicePDF({ sale, storeInfo, autoPrint = false }: InvoicePDFProps) {
   const invoiceRef = useRef<HTMLDivElement>(null);
+
+  // Use store-specific invoice info if available, otherwise fall back to footer config
+  const invoiceName = storeInfo?.invoiceName || storeInfo?.name || footerConfig.brand.name;
+  const invoiceAddress = storeInfo?.invoiceAddress || footerConfig.contact.address;
+  const invoicePhone = storeInfo?.invoicePhone || footerConfig.contact.phone;
 
   useEffect(() => {
     if (autoPrint && invoiceRef.current) {
@@ -50,19 +63,19 @@ export default function InvoicePDF({ sale, autoPrint = false }: InvoicePDFProps)
     // Restaurant Name
     pdf.setFontSize(14);
     pdf.setFont("helvetica", "bold");
-    pdf.text(footerConfig.brand.name.toUpperCase(), pageWidth / 2, yPos, { align: "center" });
+    pdf.text(invoiceName.toUpperCase(), pageWidth / 2, yPos, { align: "center" });
     yPos += 6;
 
     // Address
     pdf.setFontSize(8);
     pdf.setFont("helvetica", "normal");
-    const addressLines = pdf.splitTextToSize(footerConfig.contact.address, pageWidth - margin * 2);
+    const addressLines = pdf.splitTextToSize(invoiceAddress, pageWidth - margin * 2);
     addressLines.forEach((line: string) => {
       pdf.text(line, pageWidth / 2, yPos, { align: "center" });
       yPos += 4;
     });
     yPos += 2;
-    pdf.text(`Phone: ${footerConfig.contact.phone}`, pageWidth / 2, yPos, {
+    pdf.text(`Phone: ${invoicePhone}`, pageWidth / 2, yPos, {
       align: "center",
     });
     yPos += 6;
@@ -190,13 +203,13 @@ export default function InvoicePDF({ sale, autoPrint = false }: InvoicePDFProps)
         {/* Restaurant Header */}
         <div className="text-center mb-4 print:mb-3">
           <h1 className="text-lg sm:text-xl font-bold mb-1 print:text-base">
-            {footerConfig.brand.name.toUpperCase()}
+            {invoiceName.toUpperCase()}
           </h1>
           <p className="text-xs print:text-[10px] text-gray-600">
-            {footerConfig.contact.address}
+            {invoiceAddress}
           </p>
           <p className="text-xs print:text-[10px] text-gray-600">
-            Phone: {footerConfig.contact.phone}
+            Phone: {invoicePhone}
           </p>
         </div>
 

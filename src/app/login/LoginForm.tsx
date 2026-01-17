@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import { Lock, Mail, Loader2 } from "lucide-react";
+import StoreSelector from "./components/StoreSelector";
 
 export default function LoginForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [showStoreSelector, setShowStoreSelector] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -27,9 +29,8 @@ export default function LoginForm() {
       const data = await response.json();
 
       if (response.ok && data.user) {
-        // Cookies are set in the response, redirect immediately
-        // The admin page will verify the session
-        window.location.href = "/admin";
+        // Show store selector after successful login
+        setShowStoreSelector(true);
       } else {
         setError(data.error || "Login failed. Please check your credentials.");
         setLoading(false);
@@ -40,6 +41,11 @@ export default function LoginForm() {
       setLoading(false);
     }
   };
+
+  // If store selector should be shown, render it instead
+  if (showStoreSelector) {
+    return <StoreSelector />;
+  }
 
   return (
     <div className="relative bg-slate-800/50 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-slate-700/50 shadow-2xl w-full max-w-md mx-4">

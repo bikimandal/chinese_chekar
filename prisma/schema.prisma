@@ -8,35 +8,90 @@ datasource db {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
+  id        String      @id @default(uuid())
+  email     String      @unique
   password  String
-  role      String   @default("admin")
+  role      UserRole    @default(USER)
+  name      String?
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+  
+  // Many-to-many relationship with stores
+  storeAccess UserStore[]
+}
+
+enum UserRole {
+  ADMIN   // Super admin - full access
+  USER    // Regular user - can access assigned stores
+}
+
+model UserStore {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  storeId   String
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+
+  @@unique([userId, storeId])
+  @@index([userId])
+  @@index([storeId])
+}
+
+model Store {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  slug          String        @unique
+  isDefault     Boolean       @default(false)
+  isActive      Boolean       @default(true)
+  invoiceName   String?       // Store name for invoices
+  invoiceAddress String?      // Store address for invoices
+  invoicePhone  String?       // Store phone for invoices
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  
+  items         Item[]
+  products      Product[]
+  categories    Category[]
+  sales         Sale[]
+  storeStatus   StoreStatus?
+  userAccess    UserStore[]   // Many-to-many with users
+
+  @@index([slug])
+  @@index([isDefault])
 }
 
 model Category {
   id          String   @id @default(uuid())
-  name        String   @unique
+  name        String
   description String?
   isActive    Boolean  @default(true)
+  storeId     String
+  store       Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   items       Item[]
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+
+  @@unique([name, storeId])
+  @@index([storeId])
 }
 
 model Product {
   id               String   @id @default(uuid())
-  name             String   @unique
+  name             String
   description      String?
   image            String?
   hasHalfFullPlate Boolean  @default(true)
   halfPlatePrice   Float?
   fullPlatePrice   Float?
+  storeId          String
+  store            Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   items            Item[]
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
+  @@unique([name, storeId])
+  @@index([storeId])
 }
 
 model Item {
@@ -50,6 +105,8 @@ model Item {
   category    Category? @relation(fields: [categoryId], references: [id])
   productId   String?
   product     Product?  @relation(fields: [productId], references: [id])
+  storeId     String
+  store       Store     @relation(fields: [storeId], references: [id], onDelete: Cascade)
   isAvailable Boolean   @default(true)
   isVisible   Boolean   @default(true)
   createdAt   DateTime  @default(now())
@@ -57,6 +114,7 @@ model Item {
 
   @@index([categoryId])
   @@index([productId])
+  @@index([storeId])
   @@index([isVisible])
 }
 
@@ -64,20 +122,26 @@ model StoreStatus {
   id        String   @id @default(uuid())
   isOpen    Boolean  @default(true)
   message   String?  @default("We are currently closed. Please check back later!")
+  storeId   String   @unique
+  store     Store    @relation(fields: [storeId], references: [id], onDelete: Cascade)
   updatedAt DateTime @updatedAt
   updatedBy String?
 }
 
 model Sale {
   id            String     @id @default(uuid())
-  invoiceNumber String     @unique @default(uuid())
+  invoiceNumber String
   totalAmount   Float
   saleDate      DateTime   @default(now())
+  storeId       String
+  store         Store      @relation(fields: [storeId], references: [id], onDelete: Cascade)
   items         SaleItem[]
   createdAt     DateTime   @default(now())
   updatedAt     DateTime   @updatedAt
 
+  @@unique([invoiceNumber, storeId])
   @@index([saleDate])
+  @@index([storeId])
 }
 
 model SaleItem {
