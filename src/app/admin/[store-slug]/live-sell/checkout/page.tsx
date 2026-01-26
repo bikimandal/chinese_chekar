@@ -470,11 +470,13 @@ export default function CheckoutPage() {
             -webkit-print-color-adjust: exact !important;
             print-color-adjust: exact !important;
           }
-          body {
+          html, body {
             margin: 0 !important;
             padding: 0 !important;
             background: white !important;
             width: 58mm !important;
+            height: auto !important;
+            overflow: visible !important;
           }
           .no-print {
             display: none !important;
@@ -486,14 +488,27 @@ export default function CheckoutPage() {
             margin: 0 !important;
             padding: 4mm 3mm !important;
             box-shadow: none !important;
+            background: white !important;
             page-break-after: avoid;
             page-break-inside: avoid;
+          }
+          /* Hide all containers and wrappers in print */
+          div:not(.receipt-container) {
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          /* Ensure receipt wrapper is transparent */
+          .receipt-container + *,
+          [class*="bg-"]:not(.receipt-container),
+          [class*="shadow"]:not(.receipt-container) {
+            background: transparent !important;
+            box-shadow: none !important;
           }
         }
       `}} />
 
-      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col print:bg-white">
-        <div className="container mx-auto px-4 pt-6 pb-4 max-w-4xl flex-1 print:p-0">
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col print:bg-white print:min-h-0 print:h-auto">
+        <div className="container mx-auto px-4 pt-6 pb-4 max-w-4xl flex-1 print:p-0 print:max-w-none print:w-auto print:h-auto">
           {/* Header */}
           <div className="mb-6 no-print">
             <div className="flex items-center justify-between gap-4 mb-4">
@@ -518,8 +533,8 @@ export default function CheckoutPage() {
           </div>
 
           {/* Receipt Preview/Display */}
-          <div className="flex justify-center mb-6 print:mb-0">
-            <div className="bg-white rounded-lg shadow-2xl p-4 print:p-0 print:shadow-none print:rounded-none">
+          <div className="flex justify-center mb-6 print:mb-0 print:bg-transparent print:p-0">
+            <div className="bg-white rounded-lg shadow-2xl p-4 print:p-0 print:shadow-none print:rounded-none print:bg-transparent">
               <ReceiptContent isPreview={!sale} />
             </div>
           </div>
