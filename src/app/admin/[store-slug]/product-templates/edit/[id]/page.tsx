@@ -3,12 +3,13 @@
 import { useState, useEffect } from "react";
 import { useParams } from "next/navigation";
 import Loader from "@/components/Loader";
-import BackButton from "../../../components/BackButton";
-import ItemForm from "../../components/ItemForm";
+import BackButton from "../../../../components/BackButton";
+import ProductForm from "../../components/ProductForm";
 
-export default function EditItemPage() {
+export default function EditProductPage() {
   const params = useParams();
-  const itemId = params.id as string;
+  const storeSlug = params["store-slug"] as string;
+  const productId = params.id as string;
 
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
@@ -54,28 +55,23 @@ export default function EditItemPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
-      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-4xl">
-        {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-            <div className="flex-1 min-w-0">
-              <h1
-                className="text-2xl sm:text-3xl font-bold text-white"
-                style={{ fontFamily: "var(--font-body), sans-serif" }}
-              >
-                Edit Item
-              </h1>
-              <p className="text-slate-400 text-xs sm:text-sm mt-1 sm:mt-2">
-                Update the details below to modify this item
-              </p>
-            </div>
-            <BackButton href="/admin" />
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 pb-6">
+      <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-6 max-w-4xl">
+        {/* Compact Header */}
+        <div className="flex items-center justify-between mb-4 sm:mb-6">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-xl sm:text-2xl font-bold text-white mb-0.5 sm:mb-1 truncate">
+              Edit Product
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-400 truncate">
+              Update product template
+            </p>
           </div>
+          <BackButton href={`/admin/${storeSlug}/settings/product-templates`} label="Back" />
         </div>
 
-        {/* Form */}
-        <ItemForm mode="edit" itemId={itemId} />
+        {/* Form Card */}
+        <ProductForm mode="edit" productId={productId} />
       </div>
     </div>
   );

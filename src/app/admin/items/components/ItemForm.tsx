@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { Save, X, Loader2 } from "lucide-react";
 import Link from "next/link";
 import Loader from "@/components/Loader";
@@ -47,6 +47,8 @@ interface ItemFormProps {
 
 export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
   const router = useRouter();
+  const params = useParams();
+  const storeSlug = params["store-slug"] as string;
   const [loading, setLoading] = useState(false);
   const [fetchingItem, setFetchingItem] = useState(mode === "edit");
   const [error, setError] = useState("");
@@ -421,7 +423,7 @@ export default function ItemForm({ mode, itemId, initialData }: ItemFormProps) {
                 ? "All products have been added. "
                 : "No products available. "}
               <Link
-                href="/admin/product-templates"
+                href={`/admin/${storeSlug}/settings/product-templates`}
                 className="underline hover:text-amber-300"
               >
                 {products.length === 0
