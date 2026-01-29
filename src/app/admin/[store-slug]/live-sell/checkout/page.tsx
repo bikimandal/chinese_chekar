@@ -7,7 +7,7 @@ import { Printer, CheckCircle, ShoppingCart } from "lucide-react";
 import Link from "next/link";
 import BackButton from "../../../components/BackButton";
 import Loader from "@/components/Loader";
-import InvoicePDF from "@/components/InvoicePDF";
+import { footerConfig } from "@/config/footer";
 
 interface CartItem {
   itemId: string;
@@ -170,7 +170,25 @@ export default function CheckoutPage() {
   };
 
   const handlePrint = () => {
-    window.print();
+    // Show print instructions alert
+    const showInstructions = () => {
+      alert(
+        "📋 PRINT INSTRUCTIONS FOR 58MM THERMAL PRINTER:\n\n" +
+        "1. In the print dialog, select your thermal printer\n" +
+        "2. Set Paper Size to: 58mm (or 2.28 inches / Custom: 58mm width)\n" +
+        "3. Set Margins to: None or Minimum\n" +
+        "4. Disable Headers & Footers\n" +
+        "5. Set Scale to: 100% (or Actual Size)\n" +
+        "6. Click Print\n\n" +
+        "Note: If 58mm option is not available, use 'Custom' size with width: 58mm"
+      );
+    };
+    
+    // Show instructions, then print after a short delay
+    showInstructions();
+    setTimeout(() => {
+      window.print();
+    }, 100);
   };
 
   const getTotalAmount = () => {
@@ -206,136 +224,393 @@ export default function CheckoutPage() {
 
   const totalAmount = getTotalAmount();
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col">
-      <div className="container mx-auto px-3 sm:px-4 pt-6 sm:pt-8 pb-3 sm:pb-4 max-w-2xl flex-1">
-        {/* Header */}
-        <div className="mb-4 sm:mb-6 no-print">
-          <div className="flex items-center justify-between gap-3 sm:gap-4 mb-4">
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 bg-gradient-to-br from-emerald-500/20 to-green-600/20 rounded-lg sm:rounded-xl flex items-center justify-center flex-shrink-0">
-                <ShoppingCart className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 text-emerald-400" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <h1
-                  className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-emerald-200 to-green-200 bg-clip-text text-transparent truncate"
-                  style={{ fontFamily: "var(--font-body), sans-serif" }}
-                >
-                  Checkout
-                </h1>
-                <p className="text-slate-400 text-xs sm:text-sm mt-0.5 sm:mt-1">
-                  Review your order and confirm sale
-                </p>
-              </div>
-            </div>
-            <BackButton href={liveSellPath} label="Back to Cart" />
+  // Get store info for receipt
+  const invoiceName = storeInfo?.invoiceName || storeInfo?.name || footerConfig.brand.name;
+  const invoiceAddress = storeInfo?.invoiceAddress || footerConfig.contact.address;
+  const invoicePhone = storeInfo?.invoicePhone || footerConfig.contact.phone;
+
+  // Receipt component for 58mm thermal printer
+  const ReceiptContent = ({ isPreview = false }: { isPreview?: boolean }) => {
+    const currentDate = sale 
+      ? new Date(sale.saleDate)
+      : new Date();
+    
+    const items = sale ? sale.items : cart.map((item) => {
+      const displayName = item.plateType
+        ? `${item.itemName} (${
+            item.plateType === "half" ? "Half plate" : "Full plate"
+          })`
+        : item.itemName;
+      return {
+        itemName: displayName,
+        quantity: item.quantity,
+        unitPrice: item.price,
+        totalPrice: item.price * item.quantity,
+      };
+    });
+
+    const total = sale ? sale.totalAmount : totalAmount;
+
+    return (
+      <div 
+        className="receipt-container bg-white text-black mx-auto"
+        style={{
+          width: "58mm",
+          maxWidth: "220px",
+          minWidth: "220px",
+          fontFamily: "'Courier New', 'Courier', monospace",
+          fontSize: "11px",
+          lineHeight: "1.4",
+          padding: "8px 6px",
+        }}
+      >
+        {/* Store Header */}
+        <div className="text-center mb-2" style={{ marginBottom: "8px" }}>
+          <div 
+            className="font-bold uppercase"
+            style={{ 
+              fontSize: "13px",
+              fontWeight: "bold",
+              marginBottom: "4px",
+              letterSpacing: "0.5px"
+            }}
+          >
+            {invoiceName}
+          </div>
+          <div 
+            className="text-xs"
+            style={{ 
+              fontSize: "9px",
+              lineHeight: "1.3",
+              marginBottom: "2px"
+            }}
+          >
+            {invoiceAddress}
+          </div>
+          <div 
+            className="text-xs"
+            style={{ fontSize: "9px" }}
+          >
+            Ph: {invoicePhone}
           </div>
         </div>
 
-        {!sale ? (
+        {/* Divider */}
+        <div 
+          className="divider"
+          style={{
+            borderTop: "1px dashed #000",
+            margin: "6px 0",
+          }}
+        />
+
+        {/* Invoice Header */}
+        {sale && (
           <>
-            {/* Order Summary */}
-            <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm rounded-lg sm:rounded-xl border border-slate-700/50 p-4 sm:p-6 mb-4">
-              <h2
-                className="text-xl sm:text-2xl md:text-3xl font-semibold text-white mb-4 sm:mb-6"
-                style={{ fontFamily: "var(--font-body), sans-serif" }}
-              >
-                Order Summary
-              </h2>
-              <div className="space-y-3 sm:space-y-4">
-                {cart.map((item) => {
-                  const displayName = item.plateType
-                    ? `${item.itemName} (${
-                        item.plateType === "half" ? "Half plate" : "Full plate"
-                      })`
-                    : item.itemName;
-                  return (
-                    <div
-                      key={item.itemId}
-                      className="flex items-center justify-between pb-3 sm:pb-4 border-b border-slate-700/50 last:border-0"
-                    >
-                      <div className="flex-1 min-w-0 pr-3">
-                        <p
-                          className="text-base sm:text-lg md:text-xl font-medium text-white mb-1"
-                          style={{ fontFamily: "var(--font-body), sans-serif" }}
-                        >
-                          {displayName}
-                        </p>
-                        <p className="text-sm sm:text-base text-slate-400">
-                          ₹{item.price} × {item.quantity}
-                        </p>
-                      </div>
-                      <p className="text-lg sm:text-xl md:text-2xl font-bold text-amber-400 whitespace-nowrap">
-                        ₹{(item.price * item.quantity).toFixed(2)}
-                      </p>
-                    </div>
-                  );
-                })}
-              </div>
-              <div className="mt-4 sm:mt-6 pt-4 sm:pt-6 border-t border-slate-700/50 flex items-center justify-between">
-                <span
-                  className="text-lg sm:text-xl md:text-2xl font-semibold text-white"
-                  style={{ fontFamily: "var(--font-body), sans-serif" }}
-                >
-                  Total
-                </span>
-                <span className="text-2xl sm:text-3xl md:text-4xl font-bold text-emerald-400">
-                  ₹{totalAmount.toFixed(2)}
-                </span>
-              </div>
-            </div>
-
-            {error && (
-              <div className="mb-4 p-3 sm:p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
-                {error}
-              </div>
-            )}
-
-            {/* Process Sale Button */}
-            <button
-              onClick={createSale}
-              disabled={isProcessing || cart.length === 0}
-              className="w-full flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-lg sm:rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30 text-sm sm:text-base cursor-pointer"
+            <div 
+              className="text-center font-bold uppercase mb-2"
+              style={{
+                fontSize: "12px",
+                fontWeight: "bold",
+                marginBottom: "6px",
+                letterSpacing: "0.5px"
+              }}
             >
-              {isProcessing ? (
-                <>
-                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                  <span>Processing...</span>
-                </>
-              ) : (
-                <>
-                  <CheckCircle className="w-4 h-4 sm:w-5 sm:h-5" />
-                  <span>Confirm Sale</span>
-                </>
-              )}
-            </button>
-          </>
-        ) : (
-          <>
-            {/* Invoice Display */}
-            <div className="bg-white rounded-lg sm:rounded-xl shadow-2xl p-2 sm:p-4 print:p-0 print:shadow-none flex justify-center">
-              <InvoicePDF sale={sale} storeInfo={storeInfo || undefined} />
+              INVOICE
             </div>
+            <div 
+              className="text-xs mb-1"
+              style={{ fontSize: "9px", marginBottom: "3px" }}
+            >
+              Invoice #: {sale.invoiceNumber}
+            </div>
+            <div 
+              className="text-xs mb-2"
+              style={{ fontSize: "9px", marginBottom: "6px" }}
+            >
+              Date: {currentDate.toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "2-digit",
+                year: "numeric",
+              })} {currentDate.toLocaleTimeString("en-IN", {
+                hour: "2-digit",
+                minute: "2-digit",
+                hour12: true,
+              })}
+            </div>
+            <div 
+              className="divider"
+              style={{
+                borderTop: "1px dashed #000",
+                margin: "6px 0",
+              }}
+            />
+          </>
+        )}
 
-            {/* Print Button */}
-            <div className="mt-4 sm:mt-6 flex flex-col sm:flex-row gap-3 no-print">
-              <button
-                onClick={handlePrint}
-                className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-lg sm:rounded-xl hover:from-blue-500 hover:to-blue-600 transition-all duration-300 shadow-lg shadow-blue-500/30 text-sm sm:text-base cursor-pointer"
+        {/* Items Header */}
+        <div 
+          className="flex justify-between font-bold mb-1"
+          style={{
+            fontSize: "10px",
+            fontWeight: "bold",
+            marginBottom: "4px",
+            borderBottom: "1px solid #000",
+            paddingBottom: "2px"
+          }}
+        >
+          <span style={{ width: "45%" }}>Item</span>
+          <span style={{ width: "15%", textAlign: "right" }}>Qty</span>
+          <span style={{ width: "40%", textAlign: "right" }}>Amount</span>
+        </div>
+
+        {/* Items List */}
+        <div className="items-list" style={{ marginBottom: "6px" }}>
+          {items.map((item, index) => {
+            const itemName = item.itemName.length > 20 
+              ? item.itemName.substring(0, 20) + "..."
+              : item.itemName;
+            
+            return (
+              <div 
+                key={index}
+                className="item-row mb-1"
+                style={{ 
+                  marginBottom: "4px",
+                  fontSize: "10px"
+                }}
               >
-                <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
-                Print Invoice
-              </button>
-              <Link
-                href={liveSellPath}
-                className="flex-1 flex items-center justify-center gap-2 px-4 sm:px-6 py-3 sm:py-4 bg-slate-700/50 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-lg sm:rounded-xl transition-all duration-300 text-sm sm:text-base"
-              >
-                New Sale
-              </Link>
+                <div style={{ marginBottom: "2px" }}>
+                  {itemName}
+                </div>
+                <div 
+                  className="flex justify-between"
+                  style={{ fontSize: "9px" }}
+                >
+                  <span style={{ marginLeft: "4px" }}>
+                    ₹{item.unitPrice.toFixed(2)} × {item.quantity}
+                  </span>
+                  <span 
+                    className="font-bold"
+                    style={{ fontWeight: "bold" }}
+                  >
+                    ₹{item.totalPrice.toFixed(2)}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Divider */}
+        <div 
+          className="divider"
+          style={{
+            borderTop: "1px dashed #000",
+            margin: "6px 0",
+          }}
+        />
+
+        {/* Total */}
+        <div 
+          className="flex justify-between font-bold"
+          style={{
+            fontSize: "12px",
+            fontWeight: "bold",
+            marginTop: "4px",
+            paddingTop: "4px",
+            borderTop: "2px solid #000"
+          }}
+        >
+          <span>TOTAL</span>
+          <span>₹{total.toFixed(2)}</span>
+        </div>
+
+        {/* Footer */}
+        {sale && (
+          <>
+            <div 
+              className="divider"
+              style={{
+                borderTop: "1px dashed #000",
+                margin: "8px 0 6px 0",
+              }}
+            />
+            <div 
+              className="text-center"
+              style={{
+                fontSize: "9px",
+                marginTop: "6px"
+              }}
+            >
+              <div style={{ fontWeight: "bold", marginBottom: "2px" }}>
+                Thank you for your visit!
+              </div>
+              <div style={{ fontSize: "8px" }}>
+                Visit us again soon
+              </div>
             </div>
           </>
         )}
       </div>
-    </div>
+    );
+  };
+
+  return (
+    <>
+      {/* Print Styles */}
+      <style dangerouslySetInnerHTML={{__html: `
+        @media print {
+          @page {
+            size: 58mm auto;
+            margin: 0mm;
+            padding: 0mm;
+          }
+          * {
+            -webkit-print-color-adjust: exact !important;
+            print-color-adjust: exact !important;
+          }
+          html, body {
+            margin: 0 !important;
+            padding: 0 !important;
+            background: white !important;
+            width: 58mm !important;
+            height: auto !important;
+            overflow: visible !important;
+          }
+          .no-print {
+            display: none !important;
+          }
+          .receipt-container {
+            width: 58mm !important;
+            max-width: 58mm !important;
+            min-width: 58mm !important;
+            margin: 0 !important;
+            padding: 4mm 3mm !important;
+            box-shadow: none !important;
+            background: white !important;
+            page-break-after: avoid;
+            page-break-inside: avoid;
+          }
+          /* Hide all containers and wrappers in print */
+          div:not(.receipt-container) {
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+          /* Ensure receipt wrapper is transparent */
+          .receipt-container + *,
+          [class*="bg-"]:not(.receipt-container),
+          [class*="shadow"]:not(.receipt-container) {
+            background: transparent !important;
+            box-shadow: none !important;
+          }
+        }
+      `}} />
+
+      <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex flex-col print:bg-white print:min-h-0 print:h-auto">
+        <div className="container mx-auto px-4 pt-6 pb-4 max-w-4xl flex-1 print:p-0 print:max-w-none print:w-auto print:h-auto">
+          {/* Header */}
+          <div className="mb-6 no-print">
+            <div className="flex items-center justify-between gap-4 mb-4">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="w-10 h-10 bg-gradient-to-br from-emerald-500/20 to-green-600/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <ShoppingCart className="w-5 h-5 text-emerald-400" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <h1
+                    className="text-2xl font-bold bg-gradient-to-r from-emerald-200 to-green-200 bg-clip-text text-transparent truncate"
+                    style={{ fontFamily: "var(--font-body), sans-serif" }}
+                  >
+                    {sale ? "Receipt" : "Checkout"}
+                  </h1>
+                  <p className="text-slate-400 text-sm mt-1">
+                    {sale ? "Sale completed successfully" : "Review your order and confirm sale"}
+                  </p>
+                </div>
+              </div>
+              {!sale && <BackButton href={liveSellPath} label="Back to Cart" />}
+            </div>
+          </div>
+
+          {/* Receipt Preview/Display */}
+          <div className="flex justify-center mb-6 print:mb-0 print:bg-transparent print:p-0">
+            <div className="bg-white rounded-lg shadow-2xl p-4 print:p-0 print:shadow-none print:rounded-none print:bg-transparent">
+              <ReceiptContent isPreview={!sale} />
+            </div>
+          </div>
+
+          {!sale ? (
+            <>
+              {error && (
+                <div className="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm text-center max-w-md mx-auto no-print">
+                  {error}
+                </div>
+              )}
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto no-print">
+                <button
+                  onClick={createSale}
+                  disabled={isProcessing || cart.length === 0}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-emerald-600 to-green-600 text-white font-semibold rounded-xl hover:from-emerald-500 hover:to-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-emerald-500/30 cursor-pointer"
+                >
+                  {isProcessing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      <span>Processing...</span>
+                    </>
+                  ) : (
+                    <>
+                      <CheckCircle className="w-5 h-5" />
+                      <span>Confirm Sale</span>
+                    </>
+                  )}
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              {/* Print Instructions */}
+              <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg max-w-md mx-auto no-print">
+                <div className="flex items-start gap-3">
+                  <div className="text-blue-400 mt-0.5">
+                    <Printer className="w-5 h-5" />
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-blue-300 font-semibold mb-2 text-sm">
+                      Print Instructions for 58mm Thermal Printer
+                    </h3>
+                    <ul className="text-blue-200 text-xs space-y-1 list-disc list-inside">
+                      <li>Select your thermal printer in the print dialog</li>
+                      <li>Set Paper Size to: <strong>58mm</strong> or Custom (58mm width)</li>
+                      <li>Set Margins to: <strong>None</strong> or Minimum</li>
+                      <li>Disable Headers & Footers</li>
+                      <li>Set Scale to: <strong>100%</strong> (Actual Size)</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+
+              {/* Print Button */}
+              <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto no-print">
+                <button
+                  onClick={handlePrint}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-gradient-to-r from-blue-600 to-blue-700 text-white font-semibold rounded-xl hover:from-blue-500 hover:to-blue-600 transition-all duration-300 shadow-lg shadow-blue-500/30 cursor-pointer"
+                >
+                  <Printer className="w-5 h-5" />
+                  Print Receipt
+                </button>
+                <Link
+                  href={liveSellPath}
+                  className="flex-1 flex items-center justify-center gap-2 px-6 py-4 bg-slate-700/50 border border-slate-600 text-slate-300 hover:text-white hover:border-slate-500 rounded-xl transition-all duration-300"
+                >
+                  New Sale
+                </Link>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
