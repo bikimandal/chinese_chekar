@@ -1,8 +1,8 @@
 import { redirect } from "next/navigation";
-import { StoreProvider } from "@/contexts/StoreContext";
 import { hasStoreAccess, getCurrentUser } from "@/lib/user-access";
 import { prisma } from "@/lib/prisma";
 import StoreCookieSetter from "./StoreCookieSetter";
+import StoreHydrator from "./StoreHydrator";
 
 export default async function StoreSlugLayout({
   children,
@@ -19,10 +19,10 @@ export default async function StoreSlugLayout({
     redirect("/login");
   }
 
-  // Get store by slug
+  // Get store by slug (include name + isDefault for context)
   const store = await prisma.store.findUnique({
     where: { slug: storeSlug },
-    select: { id: true, isActive: true, slug: true },
+    select: { id: true, name: true, slug: true, isActive: true, isDefault: true },
   });
 
   if (!store || !store.isActive) {
@@ -35,10 +35,13 @@ export default async function StoreSlugLayout({
     redirect("/admin/access-denied");
   }
 
+  const { isActive: _isActive, ...storeForContext } = store;
+
   return (
-    <StoreProvider>
+    <>
+      <StoreHydrator store={storeForContext} />
       <StoreCookieSetter storeId={store.id} />
       {children}
-    </StoreProvider>
+    </>
   );
 }

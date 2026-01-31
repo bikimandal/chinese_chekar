@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { ChefHat, Sparkles } from "lucide-react";
 
 interface LoaderProps {
@@ -8,29 +7,22 @@ interface LoaderProps {
   size?: "sm" | "md" | "lg";
 }
 
-interface SparklePosition {
-  top: number;
-  left: number;
-  duration: number;
-}
+// Fixed positions to avoid hydration mismatch and layout flash
+const SPARKLE_POSITIONS = [
+  { top: 12, left: 18, duration: 3.2 },
+  { top: 88, left: 22, duration: 4.1 },
+  { top: 45, left: 8, duration: 3.8 },
+  { top: 72, left: 85, duration: 3.5 },
+  { top: 25, left: 78, duration: 4.2 },
+  { top: 60, left: 42, duration: 3.6 },
+  { top: 8, left: 55, duration: 4.0 },
+  { top: 92, left: 65, duration: 3.3 },
+];
 
 export default function Loader({
   message = "Loading...",
   size = "md",
 }: LoaderProps) {
-  const [sparklePositions, setSparklePositions] = useState<SparklePosition[]>(
-    []
-  );
-
-  // Generate random positions only on client side to avoid hydration mismatch
-  useEffect(() => {
-    const positions = Array.from({ length: 8 }, () => ({
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      duration: 3 + Math.random() * 2,
-    }));
-    setSparklePositions(positions);
-  }, []);
   const sizeClasses = {
     sm: {
       container: "h-12 w-12 sm:h-14 sm:w-14",
@@ -75,9 +67,9 @@ export default function Loader({
         ></div>
       </div>
 
-      {/* Floating sparkles */}
+      {/* Floating sparkles - fixed positions to avoid flash */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {sparklePositions.map((pos, i) => (
+        {SPARKLE_POSITIONS.map((pos, i) => (
           <div
             key={i}
             className="absolute animate-float"

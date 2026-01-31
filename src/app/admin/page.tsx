@@ -1,27 +1,29 @@
 "use client";
 
 import { useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useStore } from "@/contexts/StoreContext";
 import Loader from "@/components/Loader";
 import AdminDashboard from "./components/AdminDashboard";
 
 export default function AdminPage() {
   const router = useRouter();
+  const pathname = usePathname();
   const { currentStore, loading: storeLoading } = useStore();
+
+  const isOnStoreRoute = pathname?.match(/^\/admin\/[^/]+/);
+  const willRedirect = !storeLoading && !!currentStore && !isOnStoreRoute;
 
   // Redirect to store-slug route if store is available
   useEffect(() => {
-    if (!storeLoading && currentStore) {
-      const isOnStoreRoute = window.location.pathname.match(/^\/admin\/[^\/]+/);
-      if (!isOnStoreRoute) {
-        router.replace(`/admin/${currentStore.slug}`);
-      }
+    if (willRedirect) {
+      router.replace(`/admin/${currentStore!.slug}`);
     }
-  }, [currentStore, storeLoading, router]);
+  }, [willRedirect, currentStore, router]);
 
-  if (storeLoading) {
-    return <Loader />;
+  // Keep loader until store is ready; also show loader when about to redirect to avoid flash
+  if (storeLoading || willRedirect) {
+    return <Loader message="Loading..." />;
   }
 
   return <AdminDashboard />;
