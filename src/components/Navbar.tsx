@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { Menu, X, ShoppingBag, ChefHat, LogOut } from "lucide-react";
+import { Menu, X, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 
@@ -58,9 +58,11 @@ export default function Navbar() {
               href="/"
               className="flex items-center gap-2 sm:gap-3 group"
             >
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-amber-500 to-orange-600 rounded-lg sm:rounded-xl flex items-center justify-center shadow-lg shadow-amber-500/30 transition-all duration-300 group-hover:scale-110 group-hover:shadow-amber-500/50">
-                <ChefHat className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
+              <img
+                src="/logo.jpeg"
+                alt="Chinese Chekar"
+                className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg sm:rounded-xl object-cover shadow-lg shadow-amber-500/30 transition-all duration-300 group-hover:scale-110 group-hover:shadow-amber-500/50"
+              />
               <span
                 className="text-xl sm:text-2xl md:text-3xl font-bold bg-gradient-to-r from-amber-200 via-amber-400 to-orange-300 bg-clip-text text-transparent tracking-wide hover:from-amber-300 hover:via-amber-500 hover:to-orange-400 transition-all duration-300"
                 style={{ fontFamily: 'var(--font-branding), cursive' }}

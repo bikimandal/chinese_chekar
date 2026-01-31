@@ -76,6 +76,18 @@ export default function HeroSection() {
         whileInView="visible"
         viewport={{ margin: "-100px" }}
       >
+        {/* Logo */}
+        <motion.div
+          variants={itemVariants}
+          className="flex justify-center mb-4 sm:mb-6"
+        >
+          <img
+            src="/logo.jpeg"
+            alt="Chinese Chekar"
+            className="w-20 h-20 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl object-cover shadow-2xl shadow-amber-500/20 border-2 border-amber-500/30"
+          />
+        </motion.div>
+
         {/* Premium Badge */}
         <motion.div
           variants={itemVariants}
