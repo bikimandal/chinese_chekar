@@ -522,13 +522,13 @@ export default function CheckoutPage() {
             word-break: break-word !important;
           }
           .receipt-container * { overflow: visible !important; }
-          /* Thermal printer: grayscale + high contrast so logo prints clearly (POS thermal is B&W) */
+          /* Thermal printer: strong contrast so knife & fork stay black and don’t blend with orange */
           .receipt-logo-img {
             width: 36px !important; height: 36px !important; max-width: 36px !important; max-height: 36px !important;
             object-fit: contain !important;
             -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
-            filter: grayscale(100%) contrast(1.35) brightness(0.92) !important;
-            -webkit-filter: grayscale(100%) contrast(1.35) brightness(0.92) !important;
+            filter: grayscale(100%) contrast(2.8) brightness(0.88) !important;
+            -webkit-filter: grayscale(100%) contrast(2.8) brightness(0.88) !important;
           }
           .receipt-print-wrapper { width: 58mm !important; max-width: 58mm !important; margin: 0 auto !important; }
           [class*="bg-"]:not(.receipt-container):not(.receipt-print-source) { background: transparent !important; box-shadow: none !important; }
