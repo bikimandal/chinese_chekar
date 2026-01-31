@@ -50,8 +50,12 @@ export default function LoginForm() {
   return (
     <div className="relative bg-slate-800/50 backdrop-blur-xl p-4 sm:p-6 md:p-8 rounded-xl sm:rounded-2xl border border-slate-700/50 shadow-2xl w-full max-w-md mx-4">
       <div className="text-center mb-6 sm:mb-8">
-        <div className="inline-flex items-center justify-center w-12 h-12 sm:w-16 sm:h-16 bg-gradient-to-br from-amber-500 to-orange-600 rounded-xl sm:rounded-2xl mb-3 sm:mb-4 shadow-lg shadow-amber-500/30">
-          <Lock className="w-6 h-6 sm:w-8 sm:h-8 text-white" />
+        <div className="inline-flex items-center justify-center mb-3 sm:mb-4">
+          <img
+            src="/logo.jpeg"
+            alt="Chinese Chekar"
+            className="w-14 h-14 sm:w-20 sm:h-20 rounded-xl sm:rounded-2xl object-contain shadow-lg"
+          />
         </div>
         <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-amber-200 to-orange-200 bg-clip-text text-transparent mb-2">
           Admin Portal

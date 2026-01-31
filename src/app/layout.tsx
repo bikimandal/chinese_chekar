@@ -43,6 +43,11 @@ const dancingScript = Dancing_Script({
 export const metadata: Metadata = {
   title: "Chinese Chekar | Premium Asian Cuisine & Live Inventory",
   description: "Experience authentic Chinese cuisine. Check our live inventory for daily specials.",
+  icons: {
+    icon: "/logo.jpeg",
+    shortcut: "/logo.jpeg",
+    apple: "/logo.jpeg",
+  },
 };
 
 export const viewport = {

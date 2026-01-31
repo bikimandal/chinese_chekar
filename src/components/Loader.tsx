@@ -1,6 +1,6 @@
 "use client";
 
-import { ChefHat, Sparkles } from "lucide-react";
+import { Sparkles } from "lucide-react";
 
 interface LoaderProps {
   message?: string;
@@ -106,20 +106,21 @@ export default function Loader({
             <div className="w-full h-full bg-linear-to-br from-amber-500/30 to-orange-600/30 rounded-full blur-2xl animate-pulse-glow"></div>
           </div>
 
-          {/* Center icon container with enhanced styling */}
+          {/* Center logo with enhanced styling */}
           <div
-            className={`relative ${currentSize.container} bg-linear-to-br from-amber-500 via-amber-600 to-orange-600 rounded-2xl flex items-center justify-center shadow-2xl shadow-amber-500/40 animate-pulse-scale`}
+            className={`relative ${currentSize.container} rounded-2xl flex items-center justify-center shadow-2xl shadow-amber-500/40 animate-pulse-scale overflow-hidden bg-slate-800/50 ring-2 ring-amber-500/30`}
           >
-            <ChefHat
-              className={`${currentSize.icon} text-white drop-shadow-lg`}
-              strokeWidth={2}
+            <img
+              src="/logo.jpeg"
+              alt="Chinese Chekar"
+              className={`${currentSize.container} w-full h-full object-cover drop-shadow-lg`}
             />
 
             {/* Inner glow effect */}
-            <div className="absolute inset-0 bg-linear-to-br from-white/20 to-transparent rounded-2xl"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-white/10 to-transparent rounded-2xl pointer-events-none"></div>
 
             {/* Outer pulsing glow */}
-            <div className="absolute inset-0 bg-linear-to-br from-amber-400 to-orange-500 rounded-2xl blur-xl opacity-60 animate-pulse-glow"></div>
+            <div className="absolute inset-0 bg-linear-to-br from-amber-400/20 to-orange-500/20 rounded-2xl blur-xl opacity-60 animate-pulse-glow pointer-events-none"></div>
           </div>
         </div>
 

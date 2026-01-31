@@ -257,6 +257,23 @@ export default function CheckoutPage() {
           wordBreak: "break-word",
         }}
       >
+        {/* Logo - compact for 58mm thermal, prints at exact size */}
+        <div className="text-center mb-2 receipt-logo" style={{ marginBottom: "6px" }}>
+          <img
+            src="/logo.jpeg"
+            alt=""
+            role="presentation"
+            className="receipt-logo-img"
+            style={{
+              width: "36px",
+              height: "36px",
+              objectFit: "contain",
+              display: "block",
+              margin: "0 auto",
+            }}
+          />
+        </div>
+
         {/* Store Header - full name, no truncation */}
         <div className="text-center mb-2 receipt-store-header" style={{ marginBottom: "6px" }}>
           <div 
@@ -505,6 +522,14 @@ export default function CheckoutPage() {
             word-break: break-word !important;
           }
           .receipt-container * { overflow: visible !important; }
+          /* Thermal printer: grayscale + high contrast so logo prints clearly (POS thermal is B&W) */
+          .receipt-logo-img {
+            width: 36px !important; height: 36px !important; max-width: 36px !important; max-height: 36px !important;
+            object-fit: contain !important;
+            -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important;
+            filter: grayscale(100%) contrast(1.35) brightness(0.92) !important;
+            -webkit-filter: grayscale(100%) contrast(1.35) brightness(0.92) !important;
+          }
           .receipt-print-wrapper { width: 58mm !important; max-width: 58mm !important; margin: 0 auto !important; }
           [class*="bg-"]:not(.receipt-container):not(.receipt-print-source) { background: transparent !important; box-shadow: none !important; }
         }
