@@ -55,14 +55,10 @@ export default function LiveSellPage() {
     };
   }, []);
 
-  // Fetch items when store is available
+  // Fetch items when store is available (no delay - StoreCookieSetter runs in parallel)
   useEffect(() => {
     if (isAuthenticated && currentStore) {
-      // Wait a bit longer to ensure cookie is set by StoreCookieSetter
-      const timer = setTimeout(() => {
-        fetchItems();
-      }, 500);
-      return () => clearTimeout(timer);
+      fetchItems();
     }
   }, [isAuthenticated, currentStore?.id]);
 

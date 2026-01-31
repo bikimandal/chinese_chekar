@@ -54,11 +54,14 @@ export default function AdminHeader({
             >
               Admin Dashboard
             </h1>
-            <div className="flex items-center gap-2 mt-1">
+            <div className="flex items-center gap-2 mt-1 min-h-[22px]">
               <p className="text-slate-400 text-xs sm:text-sm">
                 Manage your restaurant inventory
               </p>
-              {userRole && (
+              {/* Reserve space to avoid layout shift when role loads */}
+              {loading ? (
+                <div className="w-16 h-5 rounded-full bg-slate-700/30 animate-pulse" aria-hidden />
+              ) : userRole ? (
                 <div className={`flex items-center gap-1.5 px-2 py-0.5 rounded-full text-xs font-medium ${
                   userRole === "ADMIN"
                     ? "bg-red-500/10 border border-red-500/30 text-red-400"
@@ -71,7 +74,7 @@ export default function AdminHeader({
                   )}
                   <span>{userRole}</span>
                 </div>
-              )}
+              ) : null}
             </div>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3 w-full sm:w-auto">

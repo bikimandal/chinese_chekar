@@ -170,25 +170,7 @@ export default function CheckoutPage() {
   };
 
   const handlePrint = () => {
-    // Show print instructions alert
-    const showInstructions = () => {
-      alert(
-        "📋 PRINT INSTRUCTIONS FOR 58MM THERMAL PRINTER:\n\n" +
-        "1. In the print dialog, select your thermal printer\n" +
-        "2. Set Paper Size to: 58mm (or 2.28 inches / Custom: 58mm width)\n" +
-        "3. Set Margins to: None or Minimum\n" +
-        "4. Disable Headers & Footers\n" +
-        "5. Set Scale to: 100% (or Actual Size)\n" +
-        "6. Click Print\n\n" +
-        "Note: If 58mm option is not available, use 'Custom' size with width: 58mm"
-      );
-    };
-    
-    // Show instructions, then print after a short delay
-    showInstructions();
-    setTimeout(() => {
-      window.print();
-    }, 100);
+    window.print();
   };
 
   const getTotalAmount = () => {
@@ -229,7 +211,7 @@ export default function CheckoutPage() {
   const invoiceAddress = storeInfo?.invoiceAddress || footerConfig.contact.address;
   const invoicePhone = storeInfo?.invoicePhone || footerConfig.contact.phone;
 
-  // Receipt component for 58mm thermal printer
+  // Receipt component for 58mm thermal printer - full names, no truncation, enlarged for print
   const ReceiptContent = ({ isPreview = false }: { isPreview?: boolean }) => {
     const currentDate = sale 
       ? new Date(sale.saleDate)
@@ -251,51 +233,66 @@ export default function CheckoutPage() {
 
     const total = sale ? sale.totalAmount : totalAmount;
 
+    // Enlarged for print readability: store 15px, items 11px, small 10px, total 14px
+    const base = 13;
+    const small = 10;
+    const itemsFont = 11;
+    const totalFont = 14;
+    const storeFont = 15;
+    const paddingMm = "5mm 4mm";
+
     return (
       <div 
-        className="receipt-container bg-white text-black mx-auto"
+        className="receipt-container bg-white text-black mx-auto receipt-print-source"
         style={{
           width: "58mm",
-          maxWidth: "220px",
-          minWidth: "220px",
+          maxWidth: "58mm",
+          minWidth: "58mm",
           fontFamily: "'Courier New', 'Courier', monospace",
-          fontSize: "11px",
-          lineHeight: "1.4",
-          padding: "8px 6px",
+          fontSize: `${itemsFont}px`,
+          lineHeight: "1.45",
+          padding: paddingMm,
+          boxSizing: "border-box",
+          overflowWrap: "break-word",
+          wordBreak: "break-word",
         }}
       >
-        {/* Store Header */}
-        <div className="text-center mb-2" style={{ marginBottom: "8px" }}>
+        {/* Store Header - full name, no truncation */}
+        <div className="text-center mb-2 receipt-store-header" style={{ marginBottom: "6px" }}>
           <div 
-            className="font-bold uppercase"
+            className="font-bold uppercase receipt-store-name"
             style={{ 
-              fontSize: "13px",
+              fontSize: `${storeFont}px`,
               fontWeight: "bold",
               marginBottom: "4px",
-              letterSpacing: "0.5px"
+              letterSpacing: "0.5px",
+              lineHeight: "1.3",
+              overflowWrap: "break-word",
+              wordBreak: "break-word",
             }}
           >
             {invoiceName}
           </div>
           <div 
-            className="text-xs"
+            className="receipt-address"
             style={{ 
-              fontSize: "9px",
-              lineHeight: "1.3",
-              marginBottom: "2px"
+              fontSize: `${small}px`,
+              lineHeight: "1.35",
+              marginBottom: "2px",
+              overflowWrap: "break-word",
+              wordBreak: "break-word",
             }}
           >
             {invoiceAddress}
           </div>
           <div 
-            className="text-xs"
-            style={{ fontSize: "9px" }}
+            className="receipt-phone"
+            style={{ fontSize: `${small}px` }}
           >
             Ph: {invoicePhone}
           </div>
         </div>
 
-        {/* Divider */}
         <div 
           className="divider"
           style={{
@@ -304,29 +301,28 @@ export default function CheckoutPage() {
           }}
         />
 
-        {/* Invoice Header */}
         {sale && (
           <>
             <div 
               className="text-center font-bold uppercase mb-2"
               style={{
-                fontSize: "12px",
+                fontSize: `${base}px`,
                 fontWeight: "bold",
                 marginBottom: "6px",
-                letterSpacing: "0.5px"
+                letterSpacing: "0.5px",
               }}
             >
               INVOICE
             </div>
             <div 
-              className="text-xs mb-1"
-              style={{ fontSize: "9px", marginBottom: "3px" }}
+              className="mb-1"
+              style={{ fontSize: `${small}px`, marginBottom: "3px" }}
             >
               Invoice #: {sale.invoiceNumber}
             </div>
             <div 
-              className="text-xs mb-2"
-              style={{ fontSize: "9px", marginBottom: "6px" }}
+              className="mb-2"
+              style={{ fontSize: `${small}px`, marginBottom: "6px" }}
             >
               Date: {currentDate.toLocaleDateString("en-IN", {
                 day: "2-digit",
@@ -348,15 +344,14 @@ export default function CheckoutPage() {
           </>
         )}
 
-        {/* Items Header */}
         <div 
-          className="flex justify-between font-bold mb-1"
+          className="flex justify-between font-bold mb-1 receipt-items-header"
           style={{
-            fontSize: "10px",
+            fontSize: `${small}px`,
             fontWeight: "bold",
             marginBottom: "4px",
             borderBottom: "1px solid #000",
-            paddingBottom: "2px"
+            paddingBottom: "2px",
           }}
         >
           <span style={{ width: "45%" }}>Item</span>
@@ -364,45 +359,45 @@ export default function CheckoutPage() {
           <span style={{ width: "40%", textAlign: "right" }}>Amount</span>
         </div>
 
-        {/* Items List */}
-        <div className="items-list" style={{ marginBottom: "6px" }}>
-          {items.map((item, index) => {
-            const itemName = item.itemName.length > 20 
-              ? item.itemName.substring(0, 20) + "..."
-              : item.itemName;
-            
-            return (
+        {/* Items - full item names, wrap; no truncation */}
+        <div className="items-list receipt-items-list" style={{ marginBottom: "6px" }}>
+          {items.map((item, index) => (
+            <div 
+              key={index}
+              className="item-row mb-1 receipt-item-row"
+              style={{ 
+                marginBottom: "6px",
+                fontSize: `${itemsFont}px`,
+                overflowWrap: "break-word",
+                wordBreak: "break-word",
+              }}
+            >
               <div 
-                key={index}
-                className="item-row mb-1"
+                className="receipt-item-name"
                 style={{ 
-                  marginBottom: "4px",
-                  fontSize: "10px"
+                  marginBottom: "2px",
+                  whiteSpace: "normal",
+                  overflow: "visible",
+                  textOverflow: "clip",
                 }}
               >
-                <div style={{ marginBottom: "2px" }}>
-                  {itemName}
-                </div>
-                <div 
-                  className="flex justify-between"
-                  style={{ fontSize: "9px" }}
-                >
-                  <span style={{ marginLeft: "4px" }}>
-                    ₹{item.unitPrice.toFixed(2)} × {item.quantity}
-                  </span>
-                  <span 
-                    className="font-bold"
-                    style={{ fontWeight: "bold" }}
-                  >
-                    ₹{item.totalPrice.toFixed(2)}
-                  </span>
-                </div>
+                {item.itemName}
               </div>
-            );
-          })}
+              <div 
+                className="flex justify-between receipt-item-details"
+                style={{ fontSize: `${small}px` }}
+              >
+                <span style={{ marginLeft: "0" }}>
+                  ₹{item.unitPrice.toFixed(2)} × {item.quantity}
+                </span>
+                <span style={{ fontWeight: "bold" }}>
+                  ₹{item.totalPrice.toFixed(2)}
+                </span>
+              </div>
+            </div>
+          ))}
         </div>
 
-        {/* Divider */}
         <div 
           className="divider"
           style={{
@@ -411,22 +406,20 @@ export default function CheckoutPage() {
           }}
         />
 
-        {/* Total */}
         <div 
-          className="flex justify-between font-bold"
+          className="flex justify-between font-bold receipt-total"
           style={{
-            fontSize: "12px",
+            fontSize: `${totalFont}px`,
             fontWeight: "bold",
             marginTop: "4px",
             paddingTop: "4px",
-            borderTop: "2px solid #000"
+            borderTop: "2px solid #000",
           }}
         >
           <span>TOTAL</span>
           <span>₹{total.toFixed(2)}</span>
         </div>
 
-        {/* Footer */}
         {sale && (
           <>
             <div 
@@ -437,16 +430,16 @@ export default function CheckoutPage() {
               }}
             />
             <div 
-              className="text-center"
+              className="text-center receipt-footer"
               style={{
-                fontSize: "9px",
-                marginTop: "6px"
+                fontSize: `${small}px`,
+                marginTop: "6px",
               }}
             >
               <div style={{ fontWeight: "bold", marginBottom: "2px" }}>
                 Thank you for your visit!
               </div>
-              <div style={{ fontSize: "8px" }}>
+              <div style={{ fontSize: `${small - 1}px` }}>
                 Visit us again soon
               </div>
             </div>
@@ -458,13 +451,13 @@ export default function CheckoutPage() {
 
   return (
     <>
-      {/* Print Styles */}
+      {/* Print: exact 58mm, enlarged text, full names (no truncation) */}
       <style dangerouslySetInnerHTML={{__html: `
         @media print {
           @page {
             size: 58mm auto;
-            margin: 0mm;
-            padding: 0mm;
+            margin: 0;
+            padding: 0;
           }
           * {
             -webkit-print-color-adjust: exact !important;
@@ -475,35 +468,45 @@ export default function CheckoutPage() {
             padding: 0 !important;
             background: white !important;
             width: 58mm !important;
+            min-width: 58mm !important;
+            max-width: 58mm !important;
             height: auto !important;
             overflow: visible !important;
           }
           .no-print {
             display: none !important;
           }
-          .receipt-container {
+          .receipt-container,
+          .receipt-print-source {
             width: 58mm !important;
             max-width: 58mm !important;
             min-width: 58mm !important;
-            margin: 0 !important;
-            padding: 4mm 3mm !important;
+            margin: 0 auto !important;
+            padding: 5mm 4mm !important;
+            box-sizing: border-box !important;
             box-shadow: none !important;
             background: white !important;
             page-break-after: avoid;
             page-break-inside: avoid;
+            overflow: visible !important;
           }
-          /* Hide all containers and wrappers in print */
-          div:not(.receipt-container) {
-            background: transparent !important;
-            box-shadow: none !important;
+          /* Enlarged text for print readability */
+          .receipt-print-source { font-size: 11px !important; line-height: 1.45 !important; }
+          .receipt-store-name { font-size: 15px !important; }
+          .receipt-address, .receipt-phone, .receipt-items-header, .receipt-item-details, .receipt-footer { font-size: 10px !important; }
+          .receipt-item-name, .receipt-item-row { font-size: 11px !important; }
+          .receipt-total { font-size: 14px !important; }
+          /* Full names in print - no ellipsis, wrap */
+          .receipt-store-name, .receipt-address, .receipt-item-name {
+            overflow: visible !important;
+            text-overflow: clip !important;
+            white-space: normal !important;
+            word-wrap: break-word !important;
+            word-break: break-word !important;
           }
-          /* Ensure receipt wrapper is transparent */
-          .receipt-container + *,
-          [class*="bg-"]:not(.receipt-container),
-          [class*="shadow"]:not(.receipt-container) {
-            background: transparent !important;
-            box-shadow: none !important;
-          }
+          .receipt-container * { overflow: visible !important; }
+          .receipt-print-wrapper { width: 58mm !important; max-width: 58mm !important; margin: 0 auto !important; }
+          [class*="bg-"]:not(.receipt-container):not(.receipt-print-source) { background: transparent !important; box-shadow: none !important; }
         }
       `}} />
 
@@ -532,9 +535,9 @@ export default function CheckoutPage() {
             </div>
           </div>
 
-          {/* Receipt Preview/Display */}
-          <div className="flex justify-center mb-6 print:mb-0 print:bg-transparent print:p-0">
-            <div className="bg-white rounded-lg shadow-2xl p-4 print:p-0 print:shadow-none print:rounded-none print:bg-transparent">
+          {/* Receipt Preview/Display - print: exact 58mm wrapper */}
+          <div className="flex justify-center mb-6 print:mb-0 print:block print:bg-transparent print:p-0 receipt-print-wrapper">
+            <div className="bg-white rounded-lg shadow-2xl p-4 print:p-0 print:shadow-none print:rounded-none print:bg-transparent print:w-[58mm] print:max-w-[58mm] print:box-border">
               <ReceiptContent isPreview={!sale} />
             </div>
           </div>
@@ -570,28 +573,7 @@ export default function CheckoutPage() {
             </>
           ) : (
             <>
-              {/* Print Instructions */}
-              <div className="mb-4 p-4 bg-blue-500/10 border border-blue-500/30 rounded-lg max-w-md mx-auto no-print">
-                <div className="flex items-start gap-3">
-                  <div className="text-blue-400 mt-0.5">
-                    <Printer className="w-5 h-5" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-blue-300 font-semibold mb-2 text-sm">
-                      Print Instructions for 58mm Thermal Printer
-                    </h3>
-                    <ul className="text-blue-200 text-xs space-y-1 list-disc list-inside">
-                      <li>Select your thermal printer in the print dialog</li>
-                      <li>Set Paper Size to: <strong>58mm</strong> or Custom (58mm width)</li>
-                      <li>Set Margins to: <strong>None</strong> or Minimum</li>
-                      <li>Disable Headers & Footers</li>
-                      <li>Set Scale to: <strong>100%</strong> (Actual Size)</li>
-                    </ul>
-                  </div>
-                </div>
-              </div>
-
-              {/* Print Button */}
+              {/* Print & New Sale - minimal, no popups */}
               <div className="flex flex-col sm:flex-row gap-3 max-w-md mx-auto no-print">
                 <button
                   onClick={handlePrint}

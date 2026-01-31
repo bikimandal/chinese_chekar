@@ -16,6 +16,8 @@ interface StoreContextType {
   loading: boolean;
   setCurrentStore: (store: Store) => void;
   refreshStores: () => Promise<void>;
+  /** Hydrate from server (e.g. [store-slug] layout) to avoid loading flicker */
+  hydrateFromServer: (store: Store) => void;
 }
 
 const StoreContext = createContext<StoreContextType | undefined>(undefined);
@@ -104,6 +106,12 @@ export function StoreProvider({ children }: { children: ReactNode }) {
     await fetchStores();
   }, []);
 
+  const hydrateFromServer = useCallback((store: Store) => {
+    setCurrentStoreState(store);
+    setStores((prev) => (prev.some((s) => s.id === store.id) ? prev : [store, ...prev]));
+    setLoading(false);
+  }, []);
+
   // Update current store based on URL slug when pathname changes
   useEffect(() => {
     if (stores.length > 0 && pathname) {
@@ -130,6 +138,7 @@ export function StoreProvider({ children }: { children: ReactNode }) {
         loading,
         setCurrentStore,
         refreshStores,
+        hydrateFromServer,
       }}
     >
       {children}

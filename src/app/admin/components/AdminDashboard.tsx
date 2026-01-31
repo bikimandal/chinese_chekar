@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useMemo, useCallback, useRef } from "react";
-import { usePathname } from "next/navigation";
 import { useStore } from "@/contexts/StoreContext";
 import { Item, Category } from "../types";
 import AdminHeader from "./AdminHeader";
@@ -12,7 +11,6 @@ import ItemsTableSkeleton from "@/components/skeletons/ItemsTableSkeleton";
 import Loader from "@/components/Loader";
 
 export default function AdminDashboard() {
-  const pathname = usePathname();
   const { currentStore, loading: storeLoading } = useStore();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isCheckingAuth, setIsCheckingAuth] = useState(true);
@@ -22,43 +20,21 @@ export default function AdminDashboard() {
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [isLoadingItems, setIsLoadingItems] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const [isNavigating, setIsNavigating] = useState(false);
-  const prevPathnameRef = useRef<string | null>(null);
   const isInitialMountRef = useRef(true);
 
-  // Detect route changes to show loader immediately
   useEffect(() => {
     if (isInitialMountRef.current) {
       isInitialMountRef.current = false;
-      prevPathnameRef.current = pathname;
       checkSession();
-    } else if (prevPathnameRef.current && prevPathnameRef.current !== pathname) {
-      // Route changed - show loader immediately and reset items to trigger fresh fetch
-      setIsNavigating(true);
-      setItems([]); // Reset items to trigger fresh fetch and show loader
-      prevPathnameRef.current = pathname;
-      // Don't re-check session on navigation - user is already authenticated
-      // Items will be fetched automatically when items.length === 0
     }
-  }, [pathname]);
+  }, []);
 
   useEffect(() => {
     // Set up auto token refresh every 50 minutes (tokens expire after 1 hour)
     const refreshInterval = setInterval(() => {
       refreshToken();
     }, 50 * 60 * 1000); // 50 minutes
-
-    // Listen for navigation events
-    const handleNavigationStart = () => {
-      setIsNavigating(true);
-    };
-
-    window.addEventListener("navigation-start", handleNavigationStart);
-
-    return () => {
-      clearInterval(refreshInterval);
-      window.removeEventListener("navigation-start", handleNavigationStart);
-    };
+    return () => clearInterval(refreshInterval);
   }, []);
 
   const checkSession = async () => {
@@ -166,14 +142,6 @@ export default function AdminDashboard() {
     }
   }, [isAuthenticated, storeLoading, currentStore?.id, isCheckingAuth, items.length, fetchItems, fetchCategories]);
 
-  // Clear navigation state when items are loaded
-  useEffect(() => {
-    if (isAuthenticated && !storeLoading && currentStore && !isLoadingItems && items.length > 0) {
-      // Clear navigation state once data is loaded
-      setIsNavigating(false);
-    }
-  }, [isAuthenticated, storeLoading, currentStore, isLoadingItems, items.length]);
-
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this item?")) return;
 
@@ -263,12 +231,10 @@ export default function AdminDashboard() {
     return stats;
   }, [items]);
 
-  // Show full-page loader during initial auth check, store loading, navigation, or initial data fetch
-  // Priority: navigation > auth check > store loading > initial data fetch
-  const shouldShowLoader = 
-    isNavigating || 
-    isCheckingAuth || 
-    storeLoading || 
+  // Show full-page loader during initial auth check, store loading, or initial data fetch
+  const shouldShowLoader =
+    isCheckingAuth ||
+    storeLoading ||
     (isAuthenticated && !storeLoading && currentStore && (isLoadingItems || items.length === 0));
 
   if (shouldShowLoader) {
@@ -280,7 +246,7 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 admin-content-fade">
       <AdminHeader onLogout={handleLogout} isLoggingOut={isLoggingOut} />
 
       <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
